@@ -4,44 +4,35 @@ SetWorkingDir A_ScriptDir
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-;This script currently only works with firefox as your default browser!
+; This script currently only works with firefox as your default browser!
 
 openDownloadPage()
 {
-    WinActivate "ahk_class MozillaWindowClass"
-    currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
-    Run "https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist"
+    WinActivate("ahk_class MozillaWindowClass")
+    Run("https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist")
 
-    w := 1
-    while (w = 1)
-    {
-        currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
-        if (currentTabName = "YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
-        {
-            w := 0
-            Sleep 1000
-        }
-    }
+    WinWait("ahk_class MozillaWindowClass", "YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
+    Sleep(200)
     Return true
 }
 
 startDownload(pURL)
 {
     URL := pURL
-    ;Focus text box
-    Sleep 100
+    ; Focus text box
+    Sleep(100)
     if (findTextBar() = true)
     {
-        Sleep 100
+        Sleep(100)
         Send URL
-        ;Click start button
-        Sleep 100
+        ; Click start button
+        Sleep(100)
         if (findStartButton() = true)
         {
-            ;Wait for the website to process
+            ; Wait for the website to process
             if (waitForDownloadButton() = true)
             {
-                Sleep 500
+                Sleep(500)
             }
 
             if (findDownloadButton() = true)
@@ -54,17 +45,17 @@ startDownload(pURL)
                     {
                         closeBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
                         manageURLFile()
-                        Reload
+                        Reload()
                     }
                     else if (result = "No")
                     {
-                        ExitApp
+                        ExitApp()
                     }
                     else if (result = "Timeout")
                     {
                         closeBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
                         manageURLFile()
-                        Reload
+                        Reload()
                     }
                 }
             }
@@ -83,7 +74,7 @@ startDownload(pURL)
     Return true
 }
 
-;Multiply timer value times sleep duration for the amount in seconds
+; Multiply timer value times sleep duration for the amount in seconds
 wait8SecondsCanBeCancelled()
 {
     timer := 0
@@ -97,7 +88,7 @@ wait8SecondsCanBeCancelled()
         else
         {
             timer := timer + 1
-            Sleep 10
+            Sleep(10)
         }
     }
     Return false
@@ -107,20 +98,20 @@ closeBrowserTab(pTabName)
 {
 
     TabName := pTabName
-    WinActivate "ahk_class MozillaWindowClass"
+    WinActivate("ahk_class MozillaWindowClass")
     currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
-
+    ; Parse through 10 tabs and find the one with matching title
     Loop (10)
     {
         if (currentTabName = TabName)
         {
-            Send "^{w}"
+            Send("^{w}")
             Return
         }
         else
         {
-            Send "^{Tab}"
-            Sleep 50
+            Send("^{Tab}")
+            Sleep(50)
             currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
         }
     }
@@ -129,10 +120,10 @@ closeBrowserTab(pTabName)
 
 waitForDownloadButton()
 {
-    WinActivate "ahk_class MozillaWindowClass"
-    Sleep 50
-    MouseMove 1248, 543
-    Sleep 100
+    WinActivate ("ahk_class MozillaWindowClass")
+    Sleep(50)
+    MouseMove(1248, 543)
+    Sleep(100)
     i := 1
     while (i >= 1)
     {
@@ -145,13 +136,13 @@ waitForDownloadButton()
 
 findDownloadButton()
 {
-    WinActivate "ahk_class MozillaWindowClass"
-    Sleep 50
-    MouseMove 1248, 543
-    Sleep 100
+    WinActivate ("ahk_class MozillaWindowClass")
+    Sleep(50)
+    MouseMove(1248, 543)
+    Sleep(100)
     if (getPixelColorMouse() = 0xF07818) ; 0xF07818 is the color code of the orange button
     {
-        Send "{Click}"
+        Send("{Click}")
         Return true
     }
     else
@@ -162,13 +153,13 @@ findDownloadButton()
 
 findStartButton()
 {
-    WinActivate "ahk_class MozillaWindowClass"
-    Sleep 50
-    MouseMove 950, 348
-    Sleep 100
+    WinActivate("ahk_class MozillaWindowClass")
+    Sleep(50)
+    MouseMove(950, 348)
+    Sleep(100)
     if (getPixelColorMouse() = 0xF07818) ; 0xF07818 is the color code of the orange button
     {
-        Send "{Click}"
+        Send("{Click}")
         Return true
     }
     else
@@ -179,49 +170,49 @@ findStartButton()
 
 findTextBar()
 {
-    WinActivate "ahk_class MozillaWindowClass"
-    Sleep 50
-    MouseMove 1200, 235
-    Sleep 100
+    WinActivate("ahk_class MozillaWindowClass")
+    Sleep(50)
+    MouseMove(1200, 235)
+    Sleep(100)
     ; 0xFFFFFF is the color code of the white text box
 
-    Send "{Click}"
-    Sleep 50
-    Send "^{a}"
-    Sleep 50
-    Send "{Backspace}"
-    Sleep 50
+    Send("{Click}")
+    Sleep(50)
+    Send("^{a}")
+    Sleep(50)
+    Send("{Backspace}")
+    Sleep(50)
     Return true
 }
 
-;Enter the desired format in caps (e.g. "MP3")
+; Enter the desired format in caps (e.g. "MP3")
 setDownloadFormat(pFormat)
 {
     format := pFormat
 
     if (format = "MP3")
     {
-        WinActivate "ahk_class MozillaWindowClass"
-        Sleep 10
-        MouseMove 1200, 290
-        Send "{Click}"
-        Sleep 100
-        MouseMove 650, 335
-        Send "{Click}"
+        WinActivate ("ahk_class MozillaWindowClass")
+        Sleep(10)
+        MouseMove(1200, 290)
+        Send("{Click}")
+        Sleep(100)
+        MouseMove(650, 335)
+        Send("{Click}")
     }
     else if (format = "MP4")
     {
-        WinActivate "ahk_class MozillaWindowClass"
-        Sleep 10
-        MouseMove 1200, 290
-        Send "{Click}"
-        Sleep 100
-        MouseMove 795, 335
-        Send "{Click}"
+        WinActivate ("ahk_class MozillaWindowClass")
+        Sleep(10)
+        MouseMove(1200, 290)
+        Send("{Click}")
+        Sleep(100)
+        MouseMove(795, 335)
+        Send("{Click}")
     }
 }
 
-;Enter true to toggle flipflop
+; Enter true to toggle flipflop
 toggleDownloadFormat()
 {
     static flipflop := false
@@ -238,12 +229,12 @@ toggleDownloadFormat()
 
 getPixelColorMouse()
 {
-    MouseGetPos &MouseX, &MouseY
+    MouseGetPos(&MouseX, &MouseY)
     ButtonColor := PixelGetColor(MouseX, MouseY)
     Return ButtonColor
 }
 
-;Enter true for the currentArrays length or false to receive the item in the array
+; Enter true for the currentArrays length or false to receive the item in the array
 getCurrentURL(pBoolean)
 {
     boolean := pBoolean
@@ -273,9 +264,9 @@ getCurrentURL(pBoolean)
     }
 }
 
-;If the download fails, you have to call the getCurrentURL function again, but it would have deleted one link even though it was never downloaded
-;This function prevents this error from happening, so that the seemingly deleted link will be reatached to the currentURL_Array
-;Enter true, to trigger the flipflop or false to get the last state
+; If the download fails, you have to call the getCurrentURL function again, but it would have deleted one link even though it was never downloaded
+; This function prevents this error from happening, so that the seemingly deleted link will be reatached to the currentURL_Array
+; Enter true, to trigger the flipflop or false to get the last state
 getCurrentURL_Success(pBoolean)
 {
     static flipflop := true
@@ -287,22 +278,22 @@ getCurrentURL_Success(pBoolean)
     Return flipflop
 }
 
-;Save search bar contents to text file
+; Save search bar contents to text file
 saveSearchBarContentsToFile()
 {
     fileLocation := A_ScriptDir . "\YT_URLS.txt"
     A_Clipboard := ""
-    Send "^{l}"
-    Sleep 100
-    Send "^{c}"
-    Sleep 500
-    Send "{Tab}"
-    ClipWait
+    Send("^{l}")
+    Sleep(100)
+    Send("^{c}")
+    Sleep(500)
+    Send("{Tab}")
+    ClipWait()
     FileAppend(A_Clipboard . "`n", fileLocation)
     Return fileLocation
 }
 
-;First array slot is empty ! Remember that.
+; First array slot is empty ! Remember that.
 readURLFile()
 {
     urlFile := A_ScriptDir . "\YT_URLS.txt"
@@ -356,7 +347,7 @@ userStartDownload()
                 }
                 else if (result = "Cancel")
                 {
-                    ExitApp
+                    ExitApp()
                 }
                 else if (result = "Timeout")
                 {
@@ -368,13 +359,13 @@ userStartDownload()
     else
     {
         saveSearchBarContentsToFile()
-        Sleep 200
+        Sleep(200)
         userStartDownload()
     }
 
 }
 
-;Main hotkey (start download)
+; Main hotkey (start download)
 ^+!d::
 {
     userStartDownload()
@@ -382,7 +373,7 @@ userStartDownload()
 
 Return
 
-;Second hotkey (collect URLs)
+; Second hotkey (collect URLs)
 ^+!s::
 {
     saveSearchBarContentsToFile()
@@ -406,7 +397,7 @@ F2::
 {
     try
     {
-        Run A_ScriptDir . "\YT_URLS.txt"
+        Run(A_ScriptDir . "\YT_URLS.txt")
     }
     Catch
     {
@@ -436,11 +427,11 @@ Return
 
 F4::
 {
-    Reload
+    Reload()
 }
 Return
 
 +F4::
 {
-    ExitApp
+    ExitApp()
 }
