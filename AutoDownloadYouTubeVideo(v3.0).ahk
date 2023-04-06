@@ -11,8 +11,16 @@ openDownloadPage()
     WinActivate("ahk_class MozillaWindowClass")
     Run("https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist")
 
-    WinWait("ahk_class MozillaWindowClass", "YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
-    Sleep(200)
+    w := 1
+    while (w = 1)
+    {
+        currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
+        if (currentTabName = "YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
+        {
+            w := 0
+            Sleep 1000
+        }
+    }
     Return true
 }
 
