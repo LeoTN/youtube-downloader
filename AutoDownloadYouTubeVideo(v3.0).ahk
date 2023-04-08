@@ -15,10 +15,10 @@ openDownloadPage()
     while (w = 1)
     {
         currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
-        if (currentTabName = "YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
+        If (currentTabName = "YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
         {
             w := 0
-            Sleep 1000
+            Sleep(500)
         }
     }
     Return true
@@ -29,37 +29,38 @@ startDownload(pURL)
     URL := pURL
     ; Focus text box
     Sleep(100)
-    if (findTextBar() = true)
+    If (findTextBar() = true)
     {
         Sleep(100)
         Send URL
         ; Click start button
         Sleep(100)
-        if (findStartButton() = true)
+        If (findStartButton() = true)
         {
             ; Wait for the website to process
-            if (waitForDownloadButton() = true)
+            If (waitForDownloadButton() = true)
             {
                 Sleep(500)
             }
 
-            if (findDownloadButton() = true)
+            If (findDownloadButton() = true)
             {
-                if (getCurrentURL(true) <= 0)
+                If (getCurrentURL(true) <= 0)
                 {
-                    result := MsgBox("Would you like to restart the script now?", "Download completed !", "33 T5")
+                    result := MsgBox("Would you like to clear the URL file now?", "Download completed !", "33 T5")
 
-                    if (result = "Yes")
+                    If (result = "Yes")
                     {
                         closeBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
                         manageURLFile()
                         Reload()
                     }
-                    else if (result = "No")
+                    Else If (result = "No")
                     {
+                        closeBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
                         ExitApp()
                     }
-                    else if (result = "Timeout")
+                    Else If (result = "Timeout")
                     {
                         closeBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
                         manageURLFile()
@@ -69,12 +70,12 @@ startDownload(pURL)
             }
 
         }
-        else
+        Else
         {
             Return false
         }
     }
-    else
+    Else
     {
         Return false
     }
@@ -89,11 +90,11 @@ wait8SecondsCanBeCancelled()
     while (timer <= 800)
     {
         isDown := GetKeyState("Control")
-        if (isDown = true)
+        If (isDown = true)
         {
             Return true
         }
-        else
+        Else
         {
             timer := timer + 1
             Sleep(10)
@@ -111,12 +112,12 @@ closeBrowserTab(pTabName)
     ; Parse through 10 tabs and find the one with matching title
     Loop (10)
     {
-        if (currentTabName = TabName)
+        If (currentTabName = TabName)
         {
             Send("^{w}")
             Return
         }
-        else
+        Else
         {
             Send("^{Tab}")
             Sleep(50)
@@ -128,14 +129,14 @@ closeBrowserTab(pTabName)
 
 waitForDownloadButton()
 {
-    WinActivate ("ahk_class MozillaWindowClass")
+    WinActivate("ahk_class MozillaWindowClass")
     Sleep(50)
     MouseMove(1248, 543)
     Sleep(100)
-    i := 1
-    while (i >= 1)
+    w := 1
+    while (w >= 1)
     {
-        if (getPixelColorMouse() = "0xF07818")
+        If (getPixelColorMouse() = "0xF07818")
         {
             Return true
         }
@@ -144,16 +145,16 @@ waitForDownloadButton()
 
 findDownloadButton()
 {
-    WinActivate ("ahk_class MozillaWindowClass")
+    WinActivate("ahk_class MozillaWindowClass")
     Sleep(50)
     MouseMove(1248, 543)
     Sleep(100)
-    if (getPixelColorMouse() = 0xF07818) ; 0xF07818 is the color code of the orange button
+    If (getPixelColorMouse() = 0xF07818) ; 0xF07818 is the color code of the orange button
     {
         Send("{Click}")
         Return true
     }
-    else
+    Else
     {
         Return false
     }
@@ -165,12 +166,12 @@ findStartButton()
     Sleep(50)
     MouseMove(950, 348)
     Sleep(100)
-    if (getPixelColorMouse() = 0xF07818) ; 0xF07818 is the color code of the orange button
+    If (getPixelColorMouse() = 0xF07818) ; 0xF07818 is the color code of the orange button
     {
         Send("{Click}")
         Return true
     }
-    else
+    Else
     {
         Return false
     }
@@ -198,9 +199,9 @@ setDownloadFormat(pFormat)
 {
     format := pFormat
 
-    if (format = "MP3")
+    If (format = "MP3")
     {
-        WinActivate ("ahk_class MozillaWindowClass")
+        WinActivate("ahk_class MozillaWindowClass")
         Sleep(10)
         MouseMove(1200, 290)
         Send("{Click}")
@@ -208,9 +209,9 @@ setDownloadFormat(pFormat)
         MouseMove(650, 335)
         Send("{Click}")
     }
-    else if (format = "MP4")
+    Else If (format = "MP4")
     {
-        WinActivate ("ahk_class MozillaWindowClass")
+        WinActivate("ahk_class MozillaWindowClass")
         Sleep(10)
         MouseMove(1200, 290)
         Send("{Click}")
@@ -224,12 +225,12 @@ setDownloadFormat(pFormat)
 toggleDownloadFormat()
 {
     static flipflop := false
-    if (flipflop = true)
+    If (flipflop = true)
     {
         flipflop := !flipflop
         setDownloadFormat("MP4")
     }
-    else if (flipflop = false)
+    Else If (flipflop = false)
     {
         setDownloadFormat("MP3")
     }
@@ -249,23 +250,23 @@ getCurrentURL(pBoolean)
     static currentURL_Array := readURLFile()
     static tmpArray := [""]
 
-    if (boolean = true)
+    If (boolean = true)
     {
         Return currentURL_Array.Length - 1
     }
-    else if (getCurrentURL_Success(false) = true)
+    Else If (getCurrentURL_Success(false) = true)
     {
-        if (currentURL_Array.Length > 1 && boolean = false)
+        If (currentURL_Array.Length > 1 && boolean = false)
         {
             tmpArray[1] := currentURL_Array.Pop()
             Return tmpArray[1]
         }
-        else
+        Else
         {
             Return
         }
     }
-    else if (getCurrentURL_Success(false) = false)
+    Else If (getCurrentURL_Success(false) = false)
     {
         getCurrentURL_Success(true)
         Return tmpArray[1]
@@ -279,7 +280,7 @@ getCurrentURL_Success(pBoolean)
 {
     static flipflop := true
     boolean := pBoolean
-    if (boolean = true)
+    If (boolean = true)
     {
         flipflop := !flipflop
     }
@@ -320,17 +321,25 @@ readURLFile()
 
 manageURLFile()
 {
-    result := MsgBox("Do you want to clear the link file?`n`nA backup will be created anyways.", "Manage Link File", "4164 T10")
+    result := MsgBox("Do you want to clear the URL file?`n`nA backup will be created anyways.", "Manage Link File", "4164 T10")
 
-    if (result = "Yes")
+    If (result = "Yes")
     {
-        FileMove A_ScriptDir . "\YT_URLS.txt", A_ScriptDir . "\YT_URLS_BACKUP.txt", 1
+        Try
+        {
+            FileMove(A_ScriptDir . "\YT_URLS.txt", A_ScriptDir . "\YT_URLS_BACKUP.txt", 1)
+        }
+        Catch
+        {
+            MsgBox("The file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
+        }
+
     }
-    else if (result = "No")
+    Else If (result = "No")
     {
 
     }
-    else if (result = "Timeout")
+    Else If (result = "Timeout")
     {
 
     }
@@ -338,33 +347,33 @@ manageURLFile()
 
 userStartDownload()
 {
-    if FileExist(A_ScriptDir . "\YT_URLS.txt")
+    If FileExist(A_ScriptDir . "\YT_URLS.txt")
     {
         openDownloadPage()
         static i := getCurrentURL(true)
-        Loop i
+        Loop (i)
         {
-            if (startDownload(getCurrentURL(false)) = false)
+            If (startDownload(getCurrentURL(false)) = false)
             {
                 result := MsgBox("Something went wrong !`n`nWould you like to continue ?", "Download error", "21 T3")
 
-                if (result = "Retry")
+                If (result = "Retry")
                 {
                     getCurrentURL_Success(true)
                     startDownload(getCurrentURL(false))
                 }
-                else if (result = "Cancel")
+                Else If (result = "Cancel")
                 {
                     ExitApp()
                 }
-                else if (result = "Timeout")
+                Else If (result = "Timeout")
                 {
                     MsgBox("Restart of the script is recommended !", "Warning !", "O Icon! T3")
                 }
             }
         }
     }
-    else
+    Else
     {
         saveSearchBarContentsToFile()
         Sleep(200)
@@ -390,20 +399,13 @@ Return
 
 F1::
 {
-    try
-    {
-        manageURLFile()
-    }
-    Catch
-    {
-        MsgBox("The file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
-    }
+    manageURLFile()
 }
 Return
 
 F2::
 {
-    try
+    Try
     {
         Run(A_ScriptDir . "\YT_URLS.txt")
     }
@@ -418,15 +420,15 @@ F3::
 {
     result := MsgBox("Change format?", "Format change ", "OC Icon? T5")
 
-    if (result = "Ok")
+    If (result = "Ok")
     {
         toggleDownloadFormat()
     }
-    else if (result = "Cancel")
+    Else If (result = "Cancel")
     {
 
     }
-    else if (result = "Timeout")
+    Else If (result = "Timeout")
     {
 
     }
