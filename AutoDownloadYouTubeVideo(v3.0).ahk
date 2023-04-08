@@ -12,7 +12,7 @@ openDownloadPage()
     Run("https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist")
 
     w := 1
-    while (w = 1)
+    While (w = 1)
     {
         currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
         If (currentTabName = "YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
@@ -87,7 +87,7 @@ startDownload(pURL)
 wait8SecondsCanBeCancelled()
 {
     timer := 0
-    while (timer <= 800)
+    While (timer <= 800)
     {
         isDown := GetKeyState("Control")
         If (isDown = true)
@@ -134,11 +134,12 @@ waitForDownloadButton()
     MouseMove(1248, 543)
     Sleep(100)
     w := 1
-    while (w >= 1)
+    While (w = 1)
     {
         If (getPixelColorMouse() = "0xF07818")
         {
             Return true
+            Sleep(10)
         }
     }
 }
@@ -292,17 +293,35 @@ saveSearchBarContentsToFile()
 {
     fileLocation := A_ScriptDir . "\YT_URLS.txt"
     A_Clipboard := ""
-    Send("^{l}")
-    Sleep(100)
-    Send("^{c}")
-    Sleep(500)
-    Send("{Tab}")
-    ClipWait()
+    w := 1
+    While (w = 1)
+    {
+        Send("^{l}")
+        Sleep(100)
+        Send("^{c}")
+
+        If (ClipWait(2) = true)
+        {
+            Sleep(100)
+            Send("{Tab}")
+            Break
+        }
+    }
+
+    ; Check if the URL already exists in the file
+    i := getCurrentURL(true)
+    Loop (i)
+    {
+        If (A_Clipboard = readURLFile()[A_Index])
+        {
+            Return
+        }
+    }
+
     FileAppend(A_Clipboard . "`n", fileLocation)
-    Return fileLocation
 }
 
-; First array slot is empty ! Remember that.
+; First array slot is empty ! Remember that
 readURLFile()
 {
     urlFile := A_ScriptDir . "\YT_URLS.txt"
