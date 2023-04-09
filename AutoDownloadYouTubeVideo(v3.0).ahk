@@ -312,7 +312,7 @@ saveSearchBarContentsToFile()
     i := getCurrentURL(true)
     Loop (i)
     {
-        If (A_Clipboard = readURLFile()[A_Index])
+        If (A_Clipboard = readURLFile()[A_Index + 1])
         {
             Return
         }
