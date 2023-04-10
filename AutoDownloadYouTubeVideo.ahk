@@ -55,7 +55,7 @@ startDownload(pURL)
     If (findTextBar() = true)
     {
         Sleep(100)
-        Send URL
+        Send(URL)
         ; Click start button.
         Sleep(100)
         If (findStartButton() = true)
@@ -66,9 +66,9 @@ startDownload(pURL)
                 Sleep(500)
                 If (findDownloadButton() = true)
                 {
-                    If (getCurrentURL(true) <= 0)
+                    If (getCurrentURL(true, false) <= 0)
                     {
-                        result := MsgBox("Would you like to clear the URL file now?", "Download completed !", "36 T5")
+                        result := MsgBox("Would you like to close the browser tab now?", "Download completed !", "36 T5")
 
                         If (result = "Yes")
                         {
@@ -287,19 +287,24 @@ getPixelColorMouse()
 }
 
 ; Enter true for the currentArrays length or false to receive the item in the array.
-getCurrentURL(pBoolean)
+; The second boolean defines wether you want to create the currentURL_Array or not
+getCurrentURL(pBooleanGetLength, pBooleanCreateArray)
 {
-    boolean := pBoolean
-    static currentURL_Array := readURLFile()
+    booleanGetLength := pBooleanGetLength
+    booleanCreateArray := pBooleanCreateArray
     static tmpArray := [""]
-
-    If (boolean = true)
+    static currentURL_Array := readURLFile()
+    If (booleanCreateArray = true)
+    {
+        currentURL_Array := readURLFile()
+    }
+    If (booleanGetLength = true)
     {
         Return currentURL_Array.Length
     }
     Else If (getCurrentURL_Download_Success(false) = true)
     {
-        If (currentURL_Array.Length >= 1 && boolean = false)
+        If (currentURL_Array.Length >= 1 && booleanGetLength = false)
         {
             tmpArray[1] := currentURL_Array.Pop()
             ; Checks if the item is empty inside the URLarray
@@ -318,6 +323,7 @@ getCurrentURL(pBoolean)
             Return
         }
     }
+    ; Returns the last content of the tmpArray (most likely because download failed)
     Else If (getCurrentURL_Download_Success(false) = false)
     {
         getCurrentURL_Download_Success(true)
@@ -376,7 +382,7 @@ writeToURLFile(pContent)
     content := pContent
     tmp := readURLFile()
     ; Check if the URL already exists in the file.
-    i := getCurrentURL(true)
+    i := getCurrentURL(true, true)
 
     Loop (i)
     {
@@ -428,6 +434,7 @@ manageURLFile()
         Catch
         {
             MsgBox("The file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
+            Reload()
         }
 
     }
@@ -446,17 +453,17 @@ userStartDownload()
     If FileExist(URL_FILE_LOCATION)
     {
         openDownloadPage()
-        i := getCurrentURL(true)
+        i := getCurrentURL(true, true)
         Loop (i)
         {
-            If (startDownload(getCurrentURL(false)) = false)
+            If (startDownload(getCurrentURL(false, false)) = false)
             {
                 result := MsgBox("Something went wrong !`n`nWould you like to continue ?", "Download error", "21 T3")
 
                 If (result = "Retry")
                 {
                     getCurrentURL_Download_Success(true)
-                    startDownload(getCurrentURL(false))
+                    startDownload(getCurrentURL(false, false))
                 }
                 Else If (result = "Cancel")
                 {
@@ -465,7 +472,7 @@ userStartDownload()
                 Else If (result = "Timeout")
                 {
                     getCurrentURL_Download_Success(true)
-                    startDownload(getCurrentURL(false))
+                    startDownload(getCurrentURL(false, false))
                 }
             }
         }
