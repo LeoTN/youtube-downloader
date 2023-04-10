@@ -299,13 +299,12 @@ getCurrentURL(pBoolean)
     }
     Else If (getCurrentURL_Download_Success(false) = true)
     {
-        If (currentURL_Array.Length >= 1 && boolean = false)
+        If (currentURL_Array.Length > 1 && boolean = false)
         {
             tmpArray[1] := currentURL_Array.Pop()
             ; Checks if the item is empty inside the URLarray
             If (tmpArray[1] = "")
             {
-                MsgBox("EMPTY") ;REMOVE
                 tmpArray[1] := currentURL_Array.Pop()
                 Return tmpArray[1]
             }
@@ -378,12 +377,11 @@ writeToURLFile(pContent)
     tmp := readURLFile()
     ; Check if the URL already exists in the file.
     i := getCurrentURL(true)
-    MsgBox(i) ;REMOVE
+
     Loop (i)
     {
         If (content = tmp[A_Index])
         {
-            MsgBox("Doppelt") ;REMOVE
             Return
         }
     }
@@ -405,7 +403,6 @@ readURLFile()
                 Continue
             }
             URLarray.InsertAt(i, v)
-            MsgBox("i = " . i)
             i := i + 1
         }
         Return URLarray
@@ -545,27 +542,4 @@ Return
 +F4::
 {
     ExitApp()
-}
-
-F5::
-{
-    tmp := readURLFile()
-
-    i := getCurrentURL(true) - 1
-    MsgBox(i) ;REMOVE
-    Loop (i)
-    {
-        MsgBox(tmp[A_Index])
-    }
-}
-
-F6::
-{
-    MsgBox(getCurrentURL(false))
-    MsgBox(getCurrentURL(false))
-    MsgBox(getCurrentURL(false))
-    MsgBox(getCurrentURL(false))
-    MsgBox(getCurrentURL(false))
-    MsgBox(getCurrentURL(false))
-    MsgBox(getCurrentURL(false))
 }
