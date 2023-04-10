@@ -299,7 +299,7 @@ getCurrentURL(pBoolean)
     }
     Else If (getCurrentURL_Download_Success(false) = true)
     {
-        If (currentURL_Array.Length > 1 && boolean = false)
+        If (currentURL_Array.Length >= 1 && boolean = false)
         {
             tmpArray[1] := currentURL_Array.Pop()
             ; Checks if the item is empty inside the URLarray
