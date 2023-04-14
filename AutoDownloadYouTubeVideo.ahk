@@ -72,18 +72,18 @@ startDownload(pURL)
 
                         If (result = "Yes")
                         {
-                            closeBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
+                            findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", true)
                             manageURLFile()
                             Reload()
                         }
                         Else If (result = "No")
                         {
-                            closeBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
+                            findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", true)
                             ExitApp()
                         }
                         Else If (result = "Timeout")
                         {
-                            closeBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
+                            findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", true)
                             manageURLFile()
                             Reload()
                         }
@@ -134,26 +134,37 @@ wait8SecondsCanBeCancelled()
     }
     Return false
 }
-
-closeBrowserTab(pTabName)
+; Enter the tab name you want to focus and as the second parameter wether you want to close it or not
+findBrowserTab(pTabName, pBooleanClose)
 {
-
     TabName := pTabName
-    WinActivate("ahk_class MozillaWindowClass")
+    booleanClose := pBooleanClose
+    WinActivate("ahk_class MozillaWindowClass") ; Currently only for firefox !
     currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
-    ; Parse through 10 tabs and find the one with matching title.
-    Loop (10)
+    ; Parse through 20 tabs and find the one with matching title.
+    Loop (20)
     {
-        If (currentTabName = TabName)
+        If (WinActive("ahk_class MozillaWindowClass"))
         {
-            Send("^{w}")
-            Return
+            If (currentTabName = TabName && booleanClose = true)
+            {
+                Send("^{w}")
+                Return
+            }
+            Else If (currentTabName = TabName && booleanClose = false)
+            {
+                Return
+            }
+            Else
+            {
+                Send("^{Tab}")
+                Sleep(50)
+                currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
+            }
         }
         Else
         {
-            Send("^{Tab}")
-            Sleep(50)
-            currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
+            WinActivate("ahk_class MozillaWindowClass")
         }
     }
     Return
@@ -458,7 +469,7 @@ userStartDownload()
         {
             If (startDownload(getCurrentURL(false, false)) = false)
             {
-                result := MsgBox("Something went wrong !`n`nWould you like to continue ?", "Download error", "21 T3")
+                result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL !", "Download Error !", "RC IconX 8192 T5")
 
                 If (result = "Retry")
                 {
@@ -467,7 +478,8 @@ userStartDownload()
                 }
                 Else If (result = "Cancel")
                 {
-                    ExitApp()
+                    ; Current URL will be skipped
+                    startDownload(getCurrentURL(false, false))
                 }
                 Else If (result = "Timeout")
                 {
@@ -549,4 +561,9 @@ Return
 +F4::
 {
     ExitApp()
+}
+
+F5::
+{
+    findBrowserTab("videoplayback – Mozilla Firefox", true)
 }
