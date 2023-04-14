@@ -46,7 +46,26 @@ openDownloadPage()
     Return true
 }
 
-; Starts the download and returns true if an URL download has started successfully
+; Checks if there are any common errors while starting a URL download.
+checkForErrors()
+{
+    If (findBrowserTab("videoplayback – Mozilla Firefox", false) = false)
+    {
+        ; Download video manually ?!
+        Return "Error_Black" ; Error_Black means that the download failed and opened a videoplayback page.
+    }
+    Else
+    {
+
+        If (getPixelColorMouse(1200, 290) = "0xED3833")
+        {
+            Send("F5") ; Reload the page.
+            Return "Error_Red" ; Error_Red means that the download failed but no videoplayback page was opened.
+        }
+    }
+}
+
+; Starts the download and returns true if an URL download has started successfully.
 startDownload(pURL)
 {
     URL := pURL
@@ -95,21 +114,25 @@ startDownload(pURL)
                 }
                 Else
                 {
+                    MsgBox("Failed at waiting4")
                     Return false
                 }
             }
             Else
             {
+                MsgBox("Failed at waiting3")
                 Return false
             }
         }
         Else
         {
+            MsgBox("Failed at waiting2")
             Return false
         }
     }
     Else
     {
+        MsgBox("Failed at waiting1")
         Return false
     }
 
@@ -134,7 +157,8 @@ wait8SecondsCanBeCancelled()
     }
     Return false
 }
-; Enter the tab name you want to focus and as the second parameter wether you want to close it or not
+; Enter the tab name you want to focus and as the second parameter wether you want to close it or not.
+; Returns true if a matching tab was found
 findBrowserTab(pTabName, pBooleanClose)
 {
     TabName := pTabName
@@ -149,11 +173,11 @@ findBrowserTab(pTabName, pBooleanClose)
             If (currentTabName = TabName && booleanClose = true)
             {
                 Send("^{w}")
-                Return
+                Return true
             }
             Else If (currentTabName = TabName && booleanClose = false)
             {
-                Return
+                Return true
             }
             Else
             {
@@ -175,15 +199,11 @@ findBrowserTab(pTabName, pBooleanClose)
 waitForDownloadButton()
 {
     WinActivate("ahk_class MozillaWindowClass")
-    Sleep(50)
-    MouseMove(1248, 543)
-    Sleep(100)
-
     timeout := 10 ; Enter number in seconds.
     w := 1
     While (w = 1)
     {
-        If (getPixelColorMouse() = "0xF07818")
+        If (getPixelColorMouse(1248, 543) = "0xF07818")
         {
             Sleep(10)
             Return true
@@ -200,10 +220,8 @@ waitForDownloadButton()
 findDownloadButton()
 {
     WinActivate("ahk_class MozillaWindowClass")
-    Sleep(50)
-    MouseMove(1248, 543)
-    Sleep(100)
-    If (getPixelColorMouse() = 0xF07818) ; 0xF07818 is the color code of the orange button.
+
+    If (getPixelColorMouse(1248, 543, 0xF07818) = true) ; 0xF07818 is the color code of the orange button.
     {
         Send("{Click}")
         Return true
@@ -217,10 +235,8 @@ findDownloadButton()
 findStartButton()
 {
     WinActivate("ahk_class MozillaWindowClass")
-    Sleep(50)
-    MouseMove(950, 348)
-    Sleep(100)
-    If (getPixelColorMouse() = 0xF07818) ; 0xF07818 is the color code of the orange button.
+
+    If (getPixelColorMouse(950, 348, 0xF07818) = true) ; 0xF07818 is the color code of the orange button.
     {
         Send("{Click}")
         Return true
@@ -289,17 +305,39 @@ toggleDownloadFormat()
         setDownloadFormat("MP3")
     }
 }
-
-getPixelColorMouse()
+; Enter coordinates to check a specific pixel or leave them blank to check the current one.
+; If you want to you can specify a color to search for and depending on the success the function will return true or false.
+; Otherwise the function will return the current pixels color.
+getPixelColorMouse(pMouseX := unset, pMouseY := unset, pColor := unset)
 {
+    If (IsSet(pMouseX) && IsSet(pMouseY))
+    {
+        MouseX := pMouseX
+        MouseY := pMouseY
+        Sleep(50)
+        MouseMove(MouseX, MouseY)
+    }
+    If (IsSet(pColor))
+    {
+        color := pColor
+        If (PixelSearch(&OutputX, &OutputY, MouseX, MouseY, MouseX, MouseX, color, 21) = true) ; Makes finding a color more easy by accepting multiple variations.
+        {
+            Return true
+        }
+        Else
+        {
+            Return false
+        }
+    }
+
     MouseGetPos(&MouseX, &MouseY)
     ButtonColor := PixelGetColor(MouseX, MouseY)
+    MsgBox(ButtonColor)
     Return ButtonColor
 }
-
 ; Enter true for the currentArrays length or false to receive the item in the array.
-; The second boolean defines wether you want to create the currentURL_Array or not
-getCurrentURL(pBooleanGetLength, pBooleanCreateArray)
+; The second optional boolean defines wether you want to create the currentURL_Array or not.
+getCurrentURL(pBooleanGetLength, pBooleanCreateArray := false)
 {
     booleanGetLength := pBooleanGetLength
     booleanCreateArray := pBooleanCreateArray
@@ -318,7 +356,7 @@ getCurrentURL(pBooleanGetLength, pBooleanCreateArray)
         If (currentURL_Array.Length >= 1 && booleanGetLength = false)
         {
             tmpArray[1] := currentURL_Array.Pop()
-            ; Checks if the item is empty inside the URLarray
+            ; Checks if the item is empty inside the URLarray.
             If (tmpArray[1] = "")
             {
                 tmpArray[1] := currentURL_Array.Pop()
@@ -334,7 +372,7 @@ getCurrentURL(pBooleanGetLength, pBooleanCreateArray)
             Return
         }
     }
-    ; Returns the last content of the tmpArray (most likely because download failed)
+    ; Returns the last content of the tmpArray (most likely because download failed).
     Else If (getCurrentURL_Download_Success(false) = false)
     {
         getCurrentURL_Download_Success(true)
@@ -467,24 +505,34 @@ userStartDownload()
         i := getCurrentURL(true, true)
         Loop (i)
         {
-            If (startDownload(getCurrentURL(false, false)) = false)
+            If (startDownload(getCurrentURL(false)) = false)
             {
-                result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL !", "Download Error !", "RC IconX 8192 T5")
+                ; This section tries to handle most common errors.
+                MsgBox("Error?")
+                error := checkForErrors()
+                If (error = "Error_Red")
+                {
+                    result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL !", "Download Error !", "RC IconX 8192 T5")
 
-                If (result = "Retry")
-                {
-                    getCurrentURL_Download_Success(true)
-                    startDownload(getCurrentURL(false, false))
+                    If (result = "Retry")
+                    {
+                        getCurrentURL_Download_Success(true)
+                        startDownload(getCurrentURL(false))
+                    }
+                    Else If (result = "Cancel")
+                    {
+                        ; Current URL will be skipped.
+                        startDownload(getCurrentURL(false))
+                    }
+                    Else If (result = "Timeout")
+                    {
+                        getCurrentURL_Download_Success(true)
+                        startDownload(getCurrentURL(false))
+                    }
                 }
-                Else If (result = "Cancel")
+                Else If (error := "Error_Black")
                 {
-                    ; Current URL will be skipped
-                    startDownload(getCurrentURL(false, false))
-                }
-                Else If (result = "Timeout")
-                {
-                    getCurrentURL_Download_Success(true)
-                    startDownload(getCurrentURL(false, false))
+                    MsgBox("Manual download ?!")
                 }
             }
         }
@@ -566,4 +614,26 @@ Return
 F5::
 {
     findBrowserTab("videoplayback – Mozilla Firefox", true)
+}
+
+F6::
+{
+    If (getPixelColorMouse(950, 348) = 0xF07818)
+    {
+        MsgBox("Js")
+    }
+}
+
+F7::
+{
+    getPixelColorMouse()
+}
+
+F8::
+{
+    MouseGetPos(&MouseX, &MouseY)
+    If (getPixelColorMouse(MouseX, MouseY, 0xF07818) = true)
+    {
+        MsgBox("erfolg")
+    }
 }
