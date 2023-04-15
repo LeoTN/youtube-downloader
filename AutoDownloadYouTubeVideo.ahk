@@ -30,7 +30,7 @@ checkForErrors()
 
 ; Tries to handle a given error while starting a download.
 ; In case no error is given the function will start a diagnosis.
-; Returns true if an error was found and an action was made.
+; Returns true if an error was found and an action was made and the second handleErrors() call can be ignored.
 handleErrors(pErrorType := unset, pMaxAttempts := 3)
 {
     If (IsSet(pErrorType))
@@ -58,8 +58,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 3)
         {
             getCurrentURL_DownloadSuccess(true)
             startDownload(getCurrentURL(false))
-            handleErrors()
-            Return true
+            Return handleErrors()
         }
         Else If (result = "Cancel")
         {
@@ -73,7 +72,8 @@ handleErrors(pErrorType := unset, pMaxAttempts := 3)
             If (maxAttempts > 0)
             {
                 ; This ensures that the function does not run infinetly
-                handleErrors("Error_Red", maxAttempts - 1) ; The script tries the download several times and skips it after the maxAttempts number is reached
+                ; The script tries the download several times and skips it after the maxAttempts number is reached ; The script tries the download several times and skips it after the maxAttempts number is reached
+                Return handleErrors("Error_Red", maxAttempts - 1)
             }
             Else
             {
@@ -146,29 +146,22 @@ userStartDownload()
 {
     If FileExist(URL_FILE_LOCATION)
     {
-        openDownloadPage()
+        ; openDownloadPage() ; CHANGED
         i := getCurrentURL(true, true)
         Loop (i)
         {
-            If (startDownload(getCurrentURL(false)) = false)
+            startDownload(getCurrentURL(false))
+            ; Checks for common errors.
+            result := unset
+            result := handleErrors("Error_Red")
+            while (IsSet(result) = false)
             {
-                ; Something went wrong !
-                result := unset
-                result := handleErrors()
-                while (IsSet(result) = false)
-                {
-                    Sleep(500)
-                }
+                Sleep(500)
             }
-            Else
+            If (result = true)
             {
-                ; Just an extra check if there are no errors.
-                result := unset
-                result := handleErrors()
-                while (IsSet(result) = false)
-                {
-                    Sleep(500)
-                }
+                ; Deletes the URL which has to do with an error.
+                getCurrentURL(false)
             }
         }
     }
@@ -178,7 +171,6 @@ userStartDownload()
         Sleep(200)
         userStartDownload()
     }
-
 }
 
 ; Starts the download and returns true if an URL download has started successfully.
@@ -190,7 +182,7 @@ startDownload(pURL)
     If (findTextBar() = true)
     {
         Sleep(100)
-        Send(URL)
+        ; Send(URL) ; CHANGED
         Sleep(100)
         ; Click start button.
         If (findStartButton() = true)
@@ -252,7 +244,19 @@ startDownload(pURL)
         ; MsgBox("Failed at 1") ; REMOVE
         Return false
     }
+}
 
+; startDownload() support function.
+; This flipflop is used skip one execution of the handleErrors() method in order to complete one cycle of the loop.
+startDownload_skipOneErrorHandling(pBoolean)
+{
+    static flipflop := true
+    boolean := pBoolean
+    If (boolean = true)
+    {
+        flipflop := !flipflop
+    }
+    Return flipflop
 }
 
 openDownloadPage()
@@ -279,7 +283,6 @@ openDownloadPage()
         }
     }
 
-
     w := 1
     While (w = 1)
     {
@@ -296,7 +299,7 @@ openDownloadPage()
 ; Multiply timer value times sleep duration for the amount in seconds.
 wait8SecondsCanBeCancelled()
 {
-    timer := 100
+    timer := 800
     While (timer >= 0)
     {
         isDown := GetKeyState("Control")
@@ -317,8 +320,9 @@ wait8SecondsCanBeCancelled()
 ; Returns true, if the button is available and false after a set timeout timer.
 waitForDownloadButton()
 {
+    Return true
     WinActivate("ahk_class MozillaWindowClass")
-    timeout := 10 ; Enter number in seconds.
+    timeout := 4 ; Enter number in seconds. ; CHANGED
     w := 1
     While (w = 1)
     {
@@ -375,6 +379,7 @@ findBrowserTab(pTabName, pBooleanClose)
 
 findDownloadButton()
 {
+    Return true
     WinActivate("ahk_class MozillaWindowClass")
 
     If (getPixelColorMouse(1248, 543, 0xF07818) = true) ; 0xF07818 is the color code of the orange button.
@@ -390,6 +395,7 @@ findDownloadButton()
 
 findStartButton()
 {
+    Return true
     WinActivate("ahk_class MozillaWindowClass")
 
     If (getPixelColorMouse(950, 348, 0xF07818) = true) ; 0xF07818 is the color code of the orange button.
@@ -405,6 +411,7 @@ findStartButton()
 
 findTextBar()
 {
+    Return true
     WinActivate("ahk_class MozillaWindowClass")
     Sleep(50)
     MouseMove(1200, 235)
@@ -515,6 +522,7 @@ getCurrentURL(pBooleanGetLength, pBooleanCreateArray := false)
     {
         If (currentURL_Array.Length >= 1 && booleanGetLength = false)
         {
+            MsgBox("AAl")
             tmpArray[1] := currentURL_Array.Pop()
             ; Checks if the item is empty inside the URLarray.
             If (tmpArray[1] = "")
