@@ -31,7 +31,7 @@ checkForErrors()
 ; Tries to handle a given error while starting a download.
 ; In case no error is given the function will start a diagnosis.
 ; Returns true if an error was found and an action was made.
-handleErrors(pErrorType := unset)
+handleErrors(pErrorType := unset, pMaxAttempts := 3)
 {
     If (IsSet(pErrorType))
     {
@@ -47,28 +47,39 @@ handleErrors(pErrorType := unset)
             Sleep(500)
         }
     }
+    maxAttempts := pMaxAttempts
+
     ; Error handling section.
     If (error = "Error_Red")
     {
-        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL !", "Download Error !", "RC IconX 8192 T10")
+        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL !", "Download Error ! Remaining attempts : " . maxAttempts, "RC IconX 8192 T1")
 
         If (result = "Retry")
         {
             getCurrentURL_DownloadSuccess(true)
             startDownload(getCurrentURL(false))
+            handleErrors()
             Return true
         }
         Else If (result = "Cancel")
         {
             ; Current URL will be skipped.
-            startDownload(getCurrentURL(false))
             Return true
         }
         Else If (result = "Timeout")
         {
             getCurrentURL_DownloadSuccess(true)
             startDownload(getCurrentURL(false))
-            Return true
+            If (maxAttempts > 0)
+            {
+                ; This ensures that the function does not run infinetly
+                handleErrors("Error_Red", maxAttempts - 1) ; The script tries the download several times and skips it after the maxAttempts number is reached
+            }
+            Else
+            {
+                getCurrentURL_DownloadSuccess(true)
+                Return true
+            }
         }
     }
     Else If (error := "Error_Black")
@@ -122,18 +133,12 @@ handleErrors_skipURL()
     If (findBrowserTab("videoplayback – Mozilla Firefox", true) = true)
     {
         Sleep(100)
-        If (findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", false) = true)
-        {
-            startDownload(getCurrentURL(false))
-        }
-        Else
+        If (findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", false) = false)
         {
             openDownloadPage()
             Sleep(2000)
-            startDownload(getCurrentURL(false))
         }
     }
-    MsgBox("works") ; REMOVE
     Return true
 }
 
@@ -291,7 +296,7 @@ openDownloadPage()
 ; Multiply timer value times sleep duration for the amount in seconds.
 wait8SecondsCanBeCancelled()
 {
-    timer := 800
+    timer := 100
     While (timer >= 0)
     {
         isDown := GetKeyState("Control")
