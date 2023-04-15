@@ -114,8 +114,8 @@ handleErrors(pErrorType := unset)
     }
 }
 
-; handleErrors() support function to avoid repetition
-; Returns true when it has finished
+; handleErrors() support function to avoid repetition.
+; Returns true when it has finished.
 handleErrors_skipURL()
 {
     ; Current URL will be skipped and videoplayback tab closed.
@@ -180,23 +180,23 @@ userStartDownload()
 startDownload(pURL)
 {
     URL := pURL
-    ; Focus text box.
     Sleep(100)
+    ; Focus text box.
     If (findTextBar() = true)
     {
         Sleep(100)
         Send(URL)
-        ; Click start button.
         Sleep(100)
+        ; Click start button.
         If (findStartButton() = true)
         {
             ; Wait for the website to process.
             If (waitForDownloadButton() = true)
             {
-                Sleep(500)
+                Sleep(100)
                 If (findDownloadButton() = true)
                 {
-                    If (getCurrentURL(true, false) <= 0)
+                    If (getCurrentURL(true) <= 0)
                     {
                         result := MsgBox("Would you like to close the browser tab now?", "Download completed !", "36 T5")
 
@@ -489,6 +489,7 @@ getPixelColorMouse(pMouseX := unset, pMouseY := unset, pColor := unset, pVariati
     ButtonColor := PixelGetColor(MouseX, MouseY)
     Return ButtonColor
 }
+
 ; Enter true for the currentArrays length or false to receive the item in the array.
 ; The second optional boolean defines wether you want to create the currentURL_Array or not.
 getCurrentURL(pBooleanGetLength, pBooleanCreateArray := false)
@@ -496,7 +497,7 @@ getCurrentURL(pBooleanGetLength, pBooleanCreateArray := false)
     booleanGetLength := pBooleanGetLength
     booleanCreateArray := pBooleanCreateArray
     static tmpArray := [""]
-    static currentURL_Array := readURLFile()
+    static currentURL_Array := [""]
     If (booleanCreateArray = true)
     {
         currentURL_Array := readURLFile()
@@ -534,7 +535,7 @@ getCurrentURL(pBooleanGetLength, pBooleanCreateArray := false)
     }
 }
 
-; getCurrentURL() support function
+; getCurrentURL() support function.
 ; If the download fails, you have to call the getCurrentURL function again, but it would have deleted one link even though it was never downloaded.
 ; This function prevents this error from happening, so that the seemingly deleted link will be reatached to the currentURL_Array.
 ; Enter true, to trigger the flipflop or false to get the last state.
@@ -598,13 +599,15 @@ writeToURLFile(pContent)
     FileAppend(content . "`n", URL_FILE_LOCATION)
 }
 
+; Reads the URL.txt file and creates an array object with it.
 readURLFile()
 {
     Try
     {
         ; The loop makes sure, that only URLs are included into the array.
         URLs := FileRead(URL_FILE_LOCATION)
-        URLarray := [""]
+        URLarray := []
+        ; URLarray.RemoveAt(1)
         i := 1
         For k, v in StrSplit(URLs, "`n")
         {
