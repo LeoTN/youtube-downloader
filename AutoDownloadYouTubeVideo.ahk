@@ -88,7 +88,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 3)
         If (result = "OK")
         {
             ; Manual download.
-            MsgBox("Manual download required !") ; Will be automatic in future.
+            MsgBox("Manual download is reqired.`n`nPress OK when you want to continue `nexecution of the script !", "Warning !", "O Icon! 8192") ; Will be automatic in future.
 
             finished := unset
             finished := handleErrors_skipURL()
@@ -146,7 +146,7 @@ userStartDownload()
 {
     If FileExist(URL_FILE_LOCATION)
     {
-        ; openDownloadPage() ; CHANGED
+        openDownloadPage()
         i := getCurrentURL(true, true)
         Loop (i)
         {
@@ -182,7 +182,7 @@ startDownload(pURL)
     If (findTextBar() = true)
     {
         Sleep(100)
-        ; Send(URL) ; CHANGED
+        Send(URL)
         Sleep(100)
         ; Click start button.
         If (findStartButton() = true)
@@ -223,40 +223,23 @@ startDownload(pURL)
                 }
                 Else
                 {
-                    ; MsgBox("Failed at 4") ; REMOVE
                     Return false
                 }
             }
             Else
             {
-                ; MsgBox("Failed at 3") ; REMOVE
                 Return false
             }
         }
         Else
         {
-            ; MsgBox("Failed at 2") ; REMOVE
             Return false
         }
     }
     Else
     {
-        ; MsgBox("Failed at 1") ; REMOVE
         Return false
     }
-}
-
-; startDownload() support function.
-; This flipflop is used skip one execution of the handleErrors() method in order to complete one cycle of the loop.
-startDownload_skipOneErrorHandling(pBoolean)
-{
-    static flipflop := true
-    boolean := pBoolean
-    If (boolean = true)
-    {
-        flipflop := !flipflop
-    }
-    Return flipflop
 }
 
 openDownloadPage()
@@ -322,7 +305,7 @@ waitForDownloadButton()
 {
     Return true
     WinActivate("ahk_class MozillaWindowClass")
-    timeout := 4 ; Enter number in seconds. ; CHANGED
+    timeout := 10 ; Enter number in seconds.
     w := 1
     While (w = 1)
     {
@@ -379,7 +362,6 @@ findBrowserTab(pTabName, pBooleanClose)
 
 findDownloadButton()
 {
-    Return true
     WinActivate("ahk_class MozillaWindowClass")
 
     If (getPixelColorMouse(1248, 543, 0xF07818) = true) ; 0xF07818 is the color code of the orange button.
@@ -395,7 +377,6 @@ findDownloadButton()
 
 findStartButton()
 {
-    Return true
     WinActivate("ahk_class MozillaWindowClass")
 
     If (getPixelColorMouse(950, 348, 0xF07818) = true) ; 0xF07818 is the color code of the orange button.
@@ -411,7 +392,6 @@ findStartButton()
 
 findTextBar()
 {
-    Return true
     WinActivate("ahk_class MozillaWindowClass")
     Sleep(50)
     MouseMove(1200, 235)
@@ -522,7 +502,6 @@ getCurrentURL(pBooleanGetLength, pBooleanCreateArray := false)
     {
         If (currentURL_Array.Length >= 1 && booleanGetLength = false)
         {
-            MsgBox("AAl")
             tmpArray[1] := currentURL_Array.Pop()
             ; Checks if the item is empty inside the URLarray.
             If (tmpArray[1] = "")
@@ -746,37 +725,3 @@ Return
 {
     ExitApp()
 }
-
-/* DEBUG
-F5::
-{
-    findBrowserTab("videoplayback – Mozilla Firefox", true)
-}
-
-F6::
-{
-    If (getPixelColorMouse(950, 348, 0xF07818, 20) = true)
-    {
-        MsgBox("Checkste?")
-    }
-}
-
-F7::
-{
-    MsgBox(getPixelColorMouse())
-}
-
-F8::
-{
-    MouseGetPos(&MouseX, &MouseY)
-    If (getPixelColorMouse(MouseX, MouseY, 0xF07818, 20) = true)
-    {
-        MsgBox("erfolg")
-    }
-}
-
-F9::
-{
-    MsgBox(checkForErrors())
-}
-*/
