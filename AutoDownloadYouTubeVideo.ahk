@@ -4,8 +4,13 @@ SetWorkingDir A_ScriptDir
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-global URL_FILE_LOCATION := A_ScriptDir . "\YT_URLS.txt" ; Specifies path for the .txt file which stores the URLs.
-global URL_BACKUP_FILE_LOCATION := A_ScriptDir . "\YT_URLS_BACKUP.txt" ; Specifies path for the .txt file which stores the URL backup.
+; Specifies path for the .txt file which stores the URLs.
+global URL_FILE_LOCATION := A_ScriptDir . "\YT_URLS.txt"
+; Specifies path for the .txt file which stores the URL backup.
+global URL_BACKUP_FILE_LOCATION := A_ScriptDir . "\YT_URLS_BACKUP.txt"
+; Makes sure every function can open the firefox download instance. Receives an actual string in openDownloadPage().
+global firefoxWindow := ""
+
 ; This script currently only works with firefox as your default browser!
 
 ; Checks if there are any common errors while starting a URL download.
@@ -13,14 +18,27 @@ checkForErrors()
 {
     If (getPixelColorMouse(1200, 290, 0xED3833) = true)
     {
-        Send("{Browser_Refresh}") ; Reload the page.
-        Return "Error_Red" ; Error_Red means that the download failed but no videoplayback page was opened.
+        ; Reload the page.
+        Send("{Browser_Refresh}")
+        ; Error_Red means that the download failed but no videoplayback page was opened.
+        Return "Error_Red"
     }
-    Sleep(2000) ; Wait for getPixelColorMouse() to execute.
+    ; Wait for getPixelColorMouse() to execute. ; Wait for getPixelColorMouse() to execute.
+    Sleep(3000)
+    ; Checks for the videoplayback tab to appear.
     If (findBrowserTab("videoplayback – Mozilla Firefox") = true)
     {
         ; Download video manually ?!
-        Return "Error_Black" ; Error_Black means that the download failed and opened a videoplayback page.
+        ; Error_Black means that the download failed and opened a videoplayback page.
+        Return "Error_Black"
+    }
+    ; Checks for the videoplayback tab to appear (it is not always called "videoplayback")
+    ; This method is unreliable and can cause erros while downloading !
+    ; IMPORTANT NEEDS TO BE CHANGED WHEN FIREFOX USES ANY OTHER LANGUAGE THAN GERMAN !
+    Else If (WinGetTitle(firefoxWindow) = "Neuer Tab – Mozilla Firefox" || WinGetTitle(firefoxWindow) = "Mozilla Firefox")
+    {
+        ; Error_Black_2 means that the download failed and opened a videoplayback page but you can not download anything.
+        Return "Error_Black_2"
     }
     Else
     {
@@ -41,6 +59,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     {
         error := unset
         error := checkForErrors()
+
         ; Wait for the checkForError method to complete before continuing downloading.
         while (IsSet(error) = false)
         {
@@ -48,8 +67,8 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
         }
     }
     maxAttempts := pMaxAttempts
-
-    Send("{Browser_Refresh}") ; Reload the page.
+    ; Reload the page.
+    Send("{Browser_Refresh}")
     Sleep(500)
     ; Error handling section.
     If (error = "Error_Red")
@@ -83,7 +102,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
             }
         }
     }
-    Else If (error := "Error_Black")
+    Else If (error = "Error_Black")
     {
         result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL or continue and download the file manually !", "Download Error !", "OC IconX 8192 T15")
         If (result = "OK")
@@ -120,8 +139,16 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
             Return true
         }
     }
-    Else If (error := "Error_None")
+    Else If (error = "Error_Black_2")
     {
+        WinClose(firefoxWindow)
+        Sleep(500)
+        openDownloadPage()
+        Return true
+    }
+    Else If (error = "Error_None")
+    {
+        Return true
         ; Nothing here. Maybe in the future.
     }
     Else
@@ -187,7 +214,7 @@ startDownload(pURL)
     {
         URL := pURL
         ; Refresh the page so that every button is on it's exact position.
-        WinActivate("ahk_class MozillaWindowClass")
+        WinActivate(firefoxWindow)
         Sleep(100)
         Send("{Browser_Refresh}")
         Sleep(1000)
@@ -208,11 +235,11 @@ startDownload(pURL)
                     {
                         If (getCurrentURL(true) <= 0)
                         {
-                            result := MsgBox("Would you like to close the browser tab now?", "Download completed !", "36 T5")
+                            result := MsgBox("Would you like to close the browser instance now?", "Download completed !", "36 T5")
 
                             If (result = "Yes")
                             {
-                                findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", true)
+                                WinClose(firefoxWindow)
                                 manageURLFile()
                                 Reload()
                             }
@@ -224,7 +251,7 @@ startDownload(pURL)
                             }
                             Else If (result = "Timeout")
                             {
-                                findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", true)
+                                WinClose(firefoxWindow)
                                 manageURLFile()
                                 Reload()
                             }
@@ -261,19 +288,23 @@ startDownload(pURL)
 
 }
 
+; If necessary the function will open a new firefox window and the download tab within it.
 openDownloadPage()
 {
     firefoxLocation := A_ProgramFiles . "\Mozilla Firefox\firefox.exe"
-    Try
+    ; Just a random number
+    static firefoxID := 123456789
+    global firefoxWindow
     {
-        WinActivate("ahk_class MozillaWindowClass")
-        Sleep(100)
-        Run("https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist")
-    }
-    Catch
-    {
-        Run(firefoxLocation)
-        Sleep(500) ; Wait time depends on the system speed.
+        If (!WinExist("ahk_id " . firefoxID))
+        {
+            Run(firefoxLocation)
+            Sleep(500)
+            firefoxID := WinGetID("A")
+            firefoxWindow := "ahk_id " . firefoxID
+        }
+        ; Wait time depends on the system speed.
+        Sleep(500)
         Try
         {
             Run("https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist")
@@ -289,7 +320,7 @@ openDownloadPage()
     w := 1
     While (w = 1)
     {
-        currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
+        currentTabName := WinGetTitle(firefoxWindow)
         If (currentTabName = "YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
         {
             Sleep(500)
@@ -323,8 +354,9 @@ wait8SecondsCanBeCancelled()
 ; Returns true, if the button is available and false after a set timeout timer.
 waitForDownloadButton()
 {
-    WinActivate("ahk_class MozillaWindowClass")
-    timeout := 3 ; Enter number in seconds.
+    WinActivate(firefoxWindow)
+    ; Enter number in seconds.
+    timeout := 10
     w := 1
     While (w = 1)
     {
@@ -343,24 +375,49 @@ waitForDownloadButton()
 }
 
 ; Enter the tab name you want to focus and as the second parameter wether you want to close it or not.
-; Returns true if a matching tab was found
-findBrowserTab(pTabName, pBooleanClose := false)
+; The parameter parseAmount defines how many tabs the function will search before returning.
+; forceFullParce declarates if you want to execute all parseAmount times or not. May lead to flashing browser screen !
+; Returns true if a matching tab was found.
+findBrowserTab(pTabName, pBooleanClose := false, pParseAmount := 20, pForceFullParse := false)
 {
-    TabName := pTabName
-    booleanClose := pBooleanClose
-    WinActivate("ahk_class MozillaWindowClass") ; Currently only for firefox !
-    currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
-    ; Parse through 20 tabs and find the one with matching title.
-    Loop (20)
+    ; Searches if the tab name includes parts of the firefox window name.
+    If (InStr(pTabName, " – Mozilla Firefox", true))
     {
-        If (WinActive("ahk_class MozillaWindowClass"))
+        tabName := pTabName
+    }
+    ; If the user only enters the "real" tab name without the firefox window name parts,
+    ; they will be added afterwards so that the function runs properly.
+    Else
+    {
+        tabName := pTabName . " – Mozilla Firefox"
+    }
+    booleanClose := pBooleanClose
+    parseAmount := pParseAmount
+    forceFullParse := pForceFullParse
+    WinActivate(firefoxWindow)
+    ; Currently only for firefox !
+    originTab := WinGetTitle(firefoxWindow)
+    ; Parse through tabs and find the one with matching title.
+    Loop (parseAmount)
+    {
+        If (WinActive(firefoxWindow))
         {
-            If (currentTabName = TabName && booleanClose = true)
+            currentTabName := WinGetTitle(firefoxWindow)
+            ; This condition checks if the loop already parsed every tab by comparing it to the very first tab.
+            ; Once it reaches the origin tab the function will break the loop to stop parsing a second time.
+            If (forceFullParse = false)
+            {
+                If (originTab = currentTabName && A_Index != 1)
+                {
+                    Break
+                }
+            }
+            If (currentTabName = tabName && booleanClose = true)
             {
                 Send("^{w}")
                 Return true
             }
-            Else If (currentTabName = TabName && booleanClose = false)
+            Else If (currentTabName = tabName && booleanClose = false)
             {
                 Return true
             }
@@ -368,12 +425,11 @@ findBrowserTab(pTabName, pBooleanClose := false)
             {
                 Send("^{Tab}")
                 Sleep(50)
-                currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
             }
         }
         Else
         {
-            WinActivate("ahk_class MozillaWindowClass")
+            WinActivate(firefoxWindow)
         }
     }
     Return false
@@ -381,9 +437,9 @@ findBrowserTab(pTabName, pBooleanClose := false)
 
 findDownloadButton()
 {
-    WinActivate("ahk_class MozillaWindowClass")
-
-    If (getPixelColorMouse(1248, 543, 0xF07818) = true) ; 0xF07818 is the color code of the orange button.
+    WinActivate(firefoxWindow)
+    ; 0xF07818 is the color code of the orange button.
+    If (getPixelColorMouse(1248, 543, 0xF07818) = true)
     {
         Send("{Click}")
         Return true
@@ -396,9 +452,9 @@ findDownloadButton()
 
 findStartButton()
 {
-    WinActivate("ahk_class MozillaWindowClass")
-
-    If (getPixelColorMouse(950, 348, 0xF07818) = true) ; 0xF07818 is the color code of the orange button.
+    WinActivate(firefoxWindow)
+    ; 0xF07818 is the color code of the orange button.
+    If (getPixelColorMouse(950, 348, 0xF07818) = true)
     {
         Send("{Click}")
         Return true
@@ -411,11 +467,11 @@ findStartButton()
 
 findTextBar()
 {
-    WinActivate("ahk_class MozillaWindowClass")
+    WinActivate(firefoxWindow)
+    ; 0xFFFFFF is the color code of the white text box.
     Sleep(50)
     MouseMove(1200, 235)
     Sleep(100)
-    ; 0xFFFFFF is the color code of the white text box.
 
     Send("{Click}")
     Sleep(50)
@@ -433,7 +489,7 @@ setDownloadFormat(pFormat)
 
     If (format = "MP3")
     {
-        WinActivate("ahk_class MozillaWindowClass")
+        WinActivate(firefoxWindow)
         Sleep(10)
         MouseMove(1200, 290)
         Send("{Click}")
@@ -443,7 +499,7 @@ setDownloadFormat(pFormat)
     }
     Else If (format = "MP4")
     {
-        WinActivate("ahk_class MozillaWindowClass")
+        WinActivate(firefoxWindow)
         Sleep(10)
         MouseMove(1200, 290)
         Send("{Click}")
@@ -474,7 +530,7 @@ toggleDownloadFormat()
 ; The variation defines how much a color can differ fromt the original one.
 getPixelColorMouse(pMouseX := unset, pMouseY := unset, pColor := unset, pVariation := 10)
 {
-    WinActivate("ahk_class MozillaWindowClass")
+    WinActivate(firefoxWindow)
     If (IsSet(pMouseX) && IsSet(pMouseY))
     {
         MouseX := pMouseX
