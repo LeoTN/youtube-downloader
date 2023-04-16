@@ -34,7 +34,8 @@ checkForErrors()
     }
     ; Checks for the videoplayback tab to appear (it is not always called "videoplayback")
     ; This method is unreliable and can cause erros while downloading !
-    Else If (WinGetTitle(firefoxWindow) = "Mozilla Firefox")
+    ; IMPORTANT NEEDS TO BE CHANGED WHEN FIREFOX USES ANY OTHER LANGUAGE THAN GERMAN !
+    Else If (WinGetTitle(firefoxWindow) = "Neuer Tab – Mozilla Firefox" || WinGetTitle(firefoxWindow) = "Mozilla Firefox")
     {
         ; Error_Black_2 means that the download failed and opened a videoplayback page but you can not download anything.
         Return "Error_Black_2"
@@ -138,6 +139,13 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
             Return true
         }
     }
+    Else If (error = "Error_Black_2")
+    {
+        WinClose(firefoxWindow)
+        Sleep(500)
+        openDownloadPage()
+        Return true
+    }
     Else If (error = "Error_None")
     {
         Return true
@@ -227,11 +235,11 @@ startDownload(pURL)
                     {
                         If (getCurrentURL(true) <= 0)
                         {
-                            result := MsgBox("Would you like to close the browser tab now?", "Download completed !", "36 T5")
+                            result := MsgBox("Would you like to close the browser instance now?", "Download completed !", "36 T5")
 
                             If (result = "Yes")
                             {
-                                findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", true)
+                                WinClose(firefoxWindow)
                                 manageURLFile()
                                 Reload()
                             }
@@ -243,7 +251,7 @@ startDownload(pURL)
                             }
                             Else If (result = "Timeout")
                             {
-                                findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", true)
+                                WinClose(firefoxWindow)
                                 manageURLFile()
                                 Reload()
                             }
