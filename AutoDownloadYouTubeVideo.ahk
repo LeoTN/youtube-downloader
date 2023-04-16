@@ -776,13 +776,3 @@ Return
 {
     ExitApp()
 }
-
-F5::
-{
-    openDownloadPage()
-}
-
-F6::
-{
-    findBrowserTab("Crafting – Mozilla Firefox")
-}
