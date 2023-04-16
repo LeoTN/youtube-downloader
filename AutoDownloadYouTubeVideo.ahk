@@ -6,7 +6,7 @@ CoordMode "Mouse", "Client"
 
 global URL_FILE_LOCATION := A_ScriptDir . "\YT_URLS.txt" ; Specifies path for the .txt file which stores the URLs.
 global URL_BACKUP_FILE_LOCATION := A_ScriptDir . "\YT_URLS_BACKUP.txt" ; Specifies path for the .txt file which stores the URL backup. ; Specifies path for the .txt file which stores the URL backup.
-global firefoxID := 12345 ; Makes sure every function can open the firefox download instance. Receives an actual number in openDownloadPage()
+global firefoxWindow := "" ; Makes sure every function can open the firefox download instance. Receives an actual string in openDownloadPage()
 ; This script currently only works with firefox as your default browser!
 
 ; Checks if there are any common errors while starting a URL download.
@@ -190,7 +190,7 @@ startDownload(pURL)
     {
         URL := pURL
         ; Refresh the page so that every button is on it's exact position.
-        WinActivate("ahk_class MozillaWindowClass")
+        WinActivate(firefoxWindow)
         Sleep(100)
         Send("{Browser_Refresh}")
         Sleep(1000)
@@ -267,14 +267,18 @@ startDownload(pURL)
 ; If necessary the function will open a new firefox window and the download tab within it.
 openDownloadPage()
 {
-    global firefoxID
     firefoxLocation := A_ProgramFiles . "\Mozilla Firefox\firefox.exe"
+    ; Just a random number
+    static firefoxID := 123456789
+    global firefoxWindow
     {
         If (!WinExist("ahk_id " . firefoxID))
         {
             Run(firefoxLocation)
             Sleep(500)
             firefoxID := WinGetID("A")
+            firefoxWindow := "ahk_id " . firefoxID
+            MsgBox(firefoxWindow)
         }
         Sleep(500) ; Wait time depends on the system speed.
         Try
@@ -326,7 +330,7 @@ wait8SecondsCanBeCancelled()
 ; Returns true, if the button is available and false after a set timeout timer.
 waitForDownloadButton()
 {
-    WinActivate("ahk_class MozillaWindowClass")
+    WinActivate(firefoxWindow)
     timeout := 10 ; Enter number in seconds.
     w := 1
     While (w = 1)
@@ -355,19 +359,17 @@ findBrowserTab(pTabName, pBooleanClose := false, pParseAmount := 20, pForceFullP
     If (InStr(pTabName, " – Mozilla Firefox", true))
     {
         tabName := pTabName
-        MsgBox(TabName)
     }
     ; If the user only enters the "real" tab name without the firefox window name parts,
     ; they will be added afterwards so that the function runs properly.
     Else
     {
         tabName := pTabName . " – Mozilla Firefox"
-        MsgBox(tabName)
     }
     booleanClose := pBooleanClose
     parseAmount := pParseAmount
     forceFullParse := pForceFullParse
-    WinActivate("ahk_class MozillaWindowClass")
+    WinActivate(firefoxWindow)
     ; Currently only for firefox !
     originTab := WinGetTitle("ahk_class MozillaWindowClass")
     ; Parse through tabs and find the one with matching title.
@@ -402,7 +404,7 @@ findBrowserTab(pTabName, pBooleanClose := false, pParseAmount := 20, pForceFullP
         }
         Else
         {
-            WinActivate("ahk_class MozillaWindowClass")
+            WinActivate(firefoxWindow)
         }
     }
     Return false
@@ -410,7 +412,7 @@ findBrowserTab(pTabName, pBooleanClose := false, pParseAmount := 20, pForceFullP
 
 findDownloadButton()
 {
-    WinActivate("ahk_class MozillaWindowClass")
+    WinActivate(firefoxWindow)
 
     If (getPixelColorMouse(1248, 543, 0xF07818) = true) ; 0xF07818 is the color code of the orange button.
     {
@@ -425,7 +427,7 @@ findDownloadButton()
 
 findStartButton()
 {
-    WinActivate("ahk_class MozillaWindowClass")
+    WinActivate(firefoxWindow)
 
     If (getPixelColorMouse(950, 348, 0xF07818) = true) ; 0xF07818 is the color code of the orange button.
     {
@@ -440,7 +442,7 @@ findStartButton()
 
 findTextBar()
 {
-    WinActivate("ahk_class MozillaWindowClass")
+    WinActivate(firefoxWindow)
     Sleep(50)
     MouseMove(1200, 235)
     Sleep(100)
@@ -462,7 +464,7 @@ setDownloadFormat(pFormat)
 
     If (format = "MP3")
     {
-        WinActivate("ahk_class MozillaWindowClass")
+        WinActivate(firefoxWindow)
         Sleep(10)
         MouseMove(1200, 290)
         Send("{Click}")
@@ -472,7 +474,7 @@ setDownloadFormat(pFormat)
     }
     Else If (format = "MP4")
     {
-        WinActivate("ahk_class MozillaWindowClass")
+        WinActivate(firefoxWindow)
         Sleep(10)
         MouseMove(1200, 290)
         Send("{Click}")
@@ -503,7 +505,7 @@ toggleDownloadFormat()
 ; The variation defines how much a color can differ fromt the original one.
 getPixelColorMouse(pMouseX := unset, pMouseY := unset, pColor := unset, pVariation := 10)
 {
-    WinActivate("ahk_class MozillaWindowClass")
+    WinActivate(firefoxWindow)
     If (IsSet(pMouseX) && IsSet(pMouseY))
     {
         MouseX := pMouseX
