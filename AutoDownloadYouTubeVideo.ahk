@@ -376,7 +376,7 @@ findBrowserTab(pTabName, pBooleanClose := false, pParseAmount := 20, pForceFullP
         If (WinActive("ahk_class MozillaWindowClass"))
         {
             currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
-            ; This condition checks if the loop already parsed every tab by comparing the very first tab.
+            ; This condition checks if the loop already parsed every tab by comparing it to the very first tab.
             ; Once it reaches the origin tab the function will break the loop to stop parsing a second time.
             If (forceFullParse = false)
             {
