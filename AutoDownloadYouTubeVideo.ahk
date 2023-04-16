@@ -16,7 +16,7 @@ checkForErrors()
         Send("{Browser_Refresh}") ; Reload the page.
         Return "Error_Red" ; Error_Red means that the download failed but no videoplayback page was opened.
     }
-    Sleep(2000) ; Wait for getPixelColorMouse() to execute.
+    Sleep(3000) ; Wait for getPixelColorMouse() to execute.
     If (findBrowserTab("videoplayback – Mozilla Firefox") = true)
     {
         ; Download video manually ?!
@@ -41,6 +41,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     {
         error := unset
         error := checkForErrors()
+
         ; Wait for the checkForError method to complete before continuing downloading.
         while (IsSet(error) = false)
         {
@@ -83,7 +84,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
             }
         }
     }
-    Else If (error := "Error_Black")
+    Else If (error = "Error_Black")
     {
         result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL or continue and download the file manually !", "Download Error !", "OC IconX 8192 T15")
         If (result = "OK")
@@ -120,8 +121,9 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
             Return true
         }
     }
-    Else If (error := "Error_None")
+    Else If (error = "Error_None")
     {
+        Return true
         ; Nothing here. Maybe in the future.
     }
     Else
@@ -324,7 +326,7 @@ wait8SecondsCanBeCancelled()
 waitForDownloadButton()
 {
     WinActivate("ahk_class MozillaWindowClass")
-    timeout := 3 ; Enter number in seconds.
+    timeout := 10 ; Enter number in seconds.
     w := 1
     While (w = 1)
     {
