@@ -5,7 +5,8 @@ CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
 global URL_FILE_LOCATION := A_ScriptDir . "\YT_URLS.txt" ; Specifies path for the .txt file which stores the URLs.
-global URL_BACKUP_FILE_LOCATION := A_ScriptDir . "\YT_URLS_BACKUP.txt" ; Specifies path for the .txt file which stores the URL backup.
+global URL_BACKUP_FILE_LOCATION := A_ScriptDir . "\YT_URLS_BACKUP.txt" ; Specifies path for the .txt file which stores the URL backup. ; Specifies path for the .txt file which stores the URL backup.
+global firefoxID := 12345 ; Makes sure every function can open the firefox download instance. Receives an actual number in openDownloadPage()
 ; This script currently only works with firefox as your default browser!
 
 ; Checks if there are any common errors while starting a URL download.
@@ -263,18 +264,18 @@ startDownload(pURL)
 
 }
 
+; If necessary the function will open a new firefox window and the download tab within it.
 openDownloadPage()
 {
+    global firefoxID
     firefoxLocation := A_ProgramFiles . "\Mozilla Firefox\firefox.exe"
-    Try
     {
-        WinActivate("ahk_class MozillaWindowClass")
-        Sleep(100)
-        Run("https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist")
-    }
-    Catch
-    {
-        Run(firefoxLocation)
+        If (!WinExist("ahk_id " . firefoxID))
+        {
+            Run(firefoxLocation)
+            Sleep(500)
+            firefoxID := WinGetID("A")
+        }
         Sleep(500) ; Wait time depends on the system speed.
         Try
         {
@@ -345,24 +346,51 @@ waitForDownloadButton()
 }
 
 ; Enter the tab name you want to focus and as the second parameter wether you want to close it or not.
-; Returns true if a matching tab was found
-findBrowserTab(pTabName, pBooleanClose := false)
+; The parameter parseAmount defines how many tabs the function will search before returning.
+; forceFullParce declarates if you want to execute all parseAmount times or not. May lead to flashing browser screen !
+; Returns true if a matching tab was found.
+findBrowserTab(pTabName, pBooleanClose := false, pParseAmount := 20, pForceFullParse := false)
 {
-    TabName := pTabName
+    ; Searches if the tab name includes parts of the firefox window name.
+    If (InStr(pTabName, " – Mozilla Firefox", true))
+    {
+        tabName := pTabName
+        MsgBox(TabName)
+    }
+    ; If the user only enters the "real" tab name without the firefox window name parts,
+    ; they will be added afterwards so that the function runs properly.
+    Else
+    {
+        tabName := pTabName . " – Mozilla Firefox"
+        MsgBox(tabName)
+    }
     booleanClose := pBooleanClose
-    WinActivate("ahk_class MozillaWindowClass") ; Currently only for firefox !
-    currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
-    ; Parse through 20 tabs and find the one with matching title.
-    Loop (20)
+    parseAmount := pParseAmount
+    forceFullParse := pForceFullParse
+    WinActivate("ahk_class MozillaWindowClass")
+    ; Currently only for firefox !
+    originTab := WinGetTitle("ahk_class MozillaWindowClass")
+    ; Parse through tabs and find the one with matching title.
+    Loop (parseAmount)
     {
         If (WinActive("ahk_class MozillaWindowClass"))
         {
-            If (currentTabName = TabName && booleanClose = true)
+            currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
+            ; This condition checks if the loop already parsed every tab by comparing the very first tab.
+            ; Once it reaches the origin tab the function will break the loop to stop parsing a second time.
+            If (forceFullParse = false)
+            {
+                If (originTab = currentTabName && A_Index != 1)
+                {
+                    Break
+                }
+            }
+            If (currentTabName = tabName && booleanClose = true)
             {
                 Send("^{w}")
                 Return true
             }
-            Else If (currentTabName = TabName && booleanClose = false)
+            Else If (currentTabName = tabName && booleanClose = false)
             {
                 Return true
             }
@@ -370,7 +398,6 @@ findBrowserTab(pTabName, pBooleanClose := false)
             {
                 Send("^{Tab}")
                 Sleep(50)
-                currentTabName := WinGetTitle("ahk_class MozillaWindowClass")
             }
         }
         Else
@@ -746,4 +773,14 @@ Return
 +F4::
 {
     ExitApp()
+}
+
+F5::
+{
+    openDownloadPage()
+}
+
+F6::
+{
+    findBrowserTab("Crafting – Mozilla Firefox")
 }
