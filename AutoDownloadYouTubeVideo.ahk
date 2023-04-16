@@ -17,7 +17,7 @@ checkForErrors()
         Return "Error_Red" ; Error_Red means that the download failed but no videoplayback page was opened.
     }
     Sleep(2000) ; Wait for getPixelColorMouse() to execute.
-    If (findBrowserTab("videoplayback – Mozilla Firefox", false) = true)
+    If (findBrowserTab("videoplayback – Mozilla Firefox") = true)
     {
         ; Download video manually ?!
         Return "Error_Black" ; Error_Black means that the download failed and opened a videoplayback page.
@@ -30,8 +30,8 @@ checkForErrors()
 
 ; Tries to handle a given error while starting a download.
 ; In case no error is given the function will start a diagnosis.
-; Returns true if an error was found and an action was made and the second handleErrors() call can be ignored.
-handleErrors(pErrorType := unset, pMaxAttempts := 3)
+; Returns true if an error was found and an action was made.
+handleErrors(pErrorType := unset, pMaxAttempts := 2)
 {
     If (IsSet(pErrorType))
     {
@@ -49,10 +49,12 @@ handleErrors(pErrorType := unset, pMaxAttempts := 3)
     }
     maxAttempts := pMaxAttempts
 
+    Send("{Browser_Refresh}") ; Reload the page.
+    Sleep(500)
     ; Error handling section.
     If (error = "Error_Red")
     {
-        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL !", "Download Error ! Remaining attempts : " . maxAttempts, "RC IconX 8192 T1")
+        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL !", "Download Error ! Remaining attempts : " . maxAttempts + 1, "RC IconX 8192 T5")
 
         If (result = "Retry")
         {
@@ -77,14 +79,13 @@ handleErrors(pErrorType := unset, pMaxAttempts := 3)
             }
             Else
             {
-                getCurrentURL_DownloadSuccess(true)
                 Return true
             }
         }
     }
     Else If (error := "Error_Black")
     {
-        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL or continue and download the file manually !", "Download Error !", "OC IconX 8192 T20")
+        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL or continue and download the file manually !", "Download Error !", "OC IconX 8192 T15")
         If (result = "OK")
         {
             ; Manual download.
@@ -119,6 +120,10 @@ handleErrors(pErrorType := unset, pMaxAttempts := 3)
             Return true
         }
     }
+    Else If (error := "Error_None")
+    {
+        ; Nothing here. Maybe in the future.
+    }
     Else
     {
         Return false
@@ -133,7 +138,7 @@ handleErrors_skipURL()
     If (findBrowserTab("videoplayback – Mozilla Firefox", true) = true)
     {
         Sleep(100)
-        If (findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", false) = false)
+        If (findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox") = false)
         {
             openDownloadPage()
             Sleep(2000)
@@ -150,18 +155,20 @@ userStartDownload()
         i := getCurrentURL(true, true)
         Loop (i)
         {
-            startDownload(getCurrentURL(false))
-            ; Checks for common errors.
+            ; Waits for startDownload() to finish
             result := unset
-            result := handleErrors("Error_Red")
+            result := startDownload(getCurrentURL(false))
             while (IsSet(result) = false)
             {
                 Sleep(500)
             }
-            If (result = true)
+
+            ; Checks for common errors.
+            result_1 := unset
+            result_1 := handleErrors()
+            while (IsSet(result_1) = false)
             {
-                ; Deletes the URL which has to do with an error.
-                getCurrentURL(false)
+                Sleep(500)
             }
         }
     }
@@ -176,49 +183,60 @@ userStartDownload()
 ; Starts the download and returns true if an URL download has started successfully.
 startDownload(pURL)
 {
-    URL := pURL
-    Sleep(100)
-    ; Focus text box.
-    If (findTextBar() = true)
+    If (findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox") = true)
     {
+        URL := pURL
+        ; Refresh the page so that every button is on it's exact position.
+        WinActivate("ahk_class MozillaWindowClass")
         Sleep(100)
-        Send(URL)
-        Sleep(100)
-        ; Click start button.
-        If (findStartButton() = true)
+        Send("{Browser_Refresh}")
+        Sleep(1000)
+        ; Focus text box.
+        If (findTextBar() = true)
         {
-            ; Wait for the website to process.
-            If (waitForDownloadButton() = true)
+            Sleep(500)
+            Send(URL)
+            Sleep(500)
+            ; Click start button.
+            If (findStartButton() = true)
             {
-                Sleep(100)
-                If (findDownloadButton() = true)
+                ; Wait for the website to process.
+                If (waitForDownloadButton() = true)
                 {
-                    If (getCurrentURL(true) <= 0)
+                    Sleep(500)
+                    If (findDownloadButton() = true)
                     {
-                        result := MsgBox("Would you like to close the browser tab now?", "Download completed !", "36 T5")
+                        If (getCurrentURL(true) <= 0)
+                        {
+                            result := MsgBox("Would you like to close the browser tab now?", "Download completed !", "36 T5")
 
-                        If (result = "Yes")
-                        {
-                            findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", true)
-                            manageURLFile()
-                            Reload()
+                            If (result = "Yes")
+                            {
+                                findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", true)
+                                manageURLFile()
+                                Reload()
+                            }
+                            Else If (result = "No")
+                            {
+                                findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
+                                manageURLFile()
+                                Reload()
+                            }
+                            Else If (result = "Timeout")
+                            {
+                                findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", true)
+                                manageURLFile()
+                                Reload()
+                            }
                         }
-                        Else If (result = "No")
+                        Else
                         {
-                            findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", false)
-                            manageURLFile()
-                            Reload()
-                        }
-                        Else If (result = "Timeout")
-                        {
-                            findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox", true)
-                            manageURLFile()
-                            Reload()
+                            Return true
                         }
                     }
                     Else
                     {
-                        Return true
+                        Return false
                     }
                 }
                 Else
@@ -238,8 +256,9 @@ startDownload(pURL)
     }
     Else
     {
-        Return false
+        openDownloadPage()
     }
+
 }
 
 openDownloadPage()
@@ -266,6 +285,7 @@ openDownloadPage()
         }
     }
 
+    ; Waits for the download tab to appear.
     w := 1
     While (w = 1)
     {
@@ -303,13 +323,12 @@ wait8SecondsCanBeCancelled()
 ; Returns true, if the button is available and false after a set timeout timer.
 waitForDownloadButton()
 {
-    Return true
     WinActivate("ahk_class MozillaWindowClass")
-    timeout := 10 ; Enter number in seconds.
+    timeout := 3 ; Enter number in seconds.
     w := 1
     While (w = 1)
     {
-        If (getPixelColorMouse(1248, 543) = "0xF07818")
+        If (getPixelColorMouse(1248, 543, 0xF07818) = true)
         {
             Sleep(10)
             Return true
@@ -325,7 +344,7 @@ waitForDownloadButton()
 
 ; Enter the tab name you want to focus and as the second parameter wether you want to close it or not.
 ; Returns true if a matching tab was found
-findBrowserTab(pTabName, pBooleanClose)
+findBrowserTab(pTabName, pBooleanClose := false)
 {
     TabName := pTabName
     booleanClose := pBooleanClose
@@ -357,7 +376,7 @@ findBrowserTab(pTabName, pBooleanClose)
             WinActivate("ahk_class MozillaWindowClass")
         }
     }
-    Return
+    Return false
 }
 
 findDownloadButton()
@@ -448,6 +467,7 @@ toggleDownloadFormat()
         setDownloadFormat("MP3")
     }
 }
+
 ; Enter coordinates to check a specific pixel or leave them blank to check the current one.
 ; If you want to you can specify a color to search for and depending on the success the function will return true or false.
 ; Otherwise the function will return the current pixels color.
@@ -484,7 +504,7 @@ getPixelColorMouse(pMouseX := unset, pMouseY := unset, pColor := unset, pVariati
 
 ; Enter true for the currentArrays length or false to receive the item in the array.
 ; The second optional boolean defines wether you want to create the currentURL_Array or not.
-getCurrentURL(pBooleanGetLength, pBooleanCreateArray := false)
+getCurrentURL(pBooleanGetLength := false, pBooleanCreateArray := false)
 {
     booleanGetLength := pBooleanGetLength
     booleanCreateArray := pBooleanCreateArray
