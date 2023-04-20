@@ -684,15 +684,16 @@ readFile(pFileLocation, pBooleanCheckIfURL := false)
         ; The loop makes sure, that only URLs are included into the array.
         URLs := FileRead(fileLocation)
         fileArray := []
-        i := 1
-        For k, v in StrSplit(URLs, "`n")
+        For i, v in StrSplit(URLs, "`n")
         {
             If (!InStr(v, "://") && booleanCheckIfURL = true)
             {
                 Continue
             }
-            fileArray.InsertAt(i, v)
-            i := i + 1
+            If (v != "")
+            {
+                fileArray.InsertAt(i, v)
+            }
         }
         Return fileArray
     }
@@ -709,7 +710,7 @@ checkBlackListFile(pItemToCompare)
 {
     itemToCompare := pItemToCompare
     ; This content will be added to the new created blacklist file.
-    templateArray := ["www.youtube.com/", "hs"]
+    templateArray := ["www.youtube.com/", "h k"]
     If (!FileExist(BLACKLIST_FILE_LOCATION))
     {
         result := MsgBox("Could not find blacklist file.`n`nDo you want to create one?", "Warning !", "YN Icon! T10")
@@ -721,7 +722,7 @@ checkBlackListFile(pItemToCompare)
                 ; Creates the blacklist file with the template.
                 Loop templateArray.Length
                 {
-                    FileAppend(templateArray[A_Index], BLACKLIST_FILE_LOCATION)
+                    FileAppend(templateArray[A_Index] . "`n", BLACKLIST_FILE_LOCATION)
                 }
                 checkBlackListFile(itemToCompare)
             }
@@ -742,25 +743,37 @@ checkBlackListFile(pItemToCompare)
         }
     }
     ; In case something has changed in the blacklist file.
-    Else If (readFile(BLACKLIST_FILE_LOCATION).Length != templateArray.Length)
+    tmpArray := readFile(BLACKLIST_FILE_LOCATION)
+    Loop templateArray.Length
     {
-        FileDelete(BLACKLIST_FILE_LOCATION)
-        checkBlackListFile(itemToCompare)
-    }
-    Else
-    {
-        ; Compare the item if it matches with the blacklist.
-        blacklistArray := readFile(BLACKLIST_FILE_LOCATION)
-        Loop blacklistArray.Length
+        If (templateArray[A_Index] != tmpArray[A_Index])
         {
-            If (InStr(itemToCompare, blacklistArray[A_Index], true))
+            FileDelete(BLACKLIST_FILE_LOCATION)
+            Try
             {
-                Return true
+                ; Creates the blacklist file with the template.
+                Loop templateArray.Length
+                {
+                    FileAppend(templateArray[A_Index] . "`n", BLACKLIST_FILE_LOCATION)
+                }
+            }
+            Catch
+            {
+                MsgBox("Could not create file !	`n`nNo one knows why.", "Error", "O Icon! T3")
+                Reload()
             }
         }
-        Return false
-
     }
+    ; Compare the item if it matches with the blacklist.
+    blacklistArray := readFile(BLACKLIST_FILE_LOCATION)
+    Loop blacklistArray.Length
+    {
+        If (InStr(itemToCompare, blacklistArray[A_Index], true))
+        {
+            Return true
+        }
+    }
+    Return false
 }
 
 manageURLFile()
@@ -886,5 +899,5 @@ Return
 
 F5::
 {
-    MsgBox(checkBlackListFile("hs"))
+    MsgBox(checkBlackListFile("howdenzack h hs"))
 }

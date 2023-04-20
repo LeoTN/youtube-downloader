@@ -1,6 +1,7 @@
 *.exe
 YT_URLS.txt
 YT_URLS_BACKUP.txt
+YT_BLACKLIST.txt
 .vscode/launch.json
 # Will be changed in the future
 FireFoxAPI.ahk
