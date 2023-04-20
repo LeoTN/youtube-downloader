@@ -54,6 +54,9 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     If (IsSet(pErrorType))
     {
         error := pErrorType
+        ; Reload the page.
+        Send("{Browser_Refresh}")
+        Sleep(500)
     }
     Else
     {
@@ -67,9 +70,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
         }
     }
     maxAttempts := pMaxAttempts
-    ; Reload the page.
-    Send("{Browser_Refresh}")
-    Sleep(500)
+
     ; Error handling section.
     If (error = "Error_Red")
     {
@@ -148,12 +149,8 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     }
     Else If (error = "Error_None")
     {
-        Return true
-        ; Nothing here. Maybe in the future.
-    }
-    Else
-    {
         Return false
+        ; Nothing here. Maybe in the future.
     }
 }
 
@@ -197,6 +194,12 @@ userStartDownload()
             {
                 Sleep(500)
             }
+            ; This means that there was an error found.
+            If (result_1 = true)
+            {
+                Send("{Browser_Refresh}")
+                Sleep(1000)
+            }
         }
     }
     Else
@@ -216,8 +219,6 @@ startDownload(pURL)
         ; Refresh the page so that every button is on it's exact position.
         WinActivate(firefoxWindow)
         Sleep(100)
-        Send("{Browser_Refresh}")
-        Sleep(1000)
         ; Focus text box.
         If (findTextBar() = true)
         {
