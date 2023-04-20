@@ -8,6 +8,8 @@ CoordMode "Mouse", "Client"
 global URL_FILE_LOCATION := A_ScriptDir . "\YT_URLS.txt"
 ; Specifies path for the .txt file which stores the URL backup.
 global URL_BACKUP_FILE_LOCATION := A_ScriptDir . "\YT_URLS_BACKUP.txt"
+; Specifies path for the .txt file which stores the blacklist file.
+global BLACKLIST_FILE_LOCATION := A_ScriptDir . "\YT_BLACKLIST.txt"
 ; Makes sure every function can open the firefox download instance. Receives an actual string in openDownloadPage().
 global firefoxWindow := ""
 
@@ -569,7 +571,7 @@ getCurrentURL(pBooleanGetLength := false, pBooleanCreateArray := false)
     static currentURL_Array := [""]
     If (booleanCreateArray = true)
     {
-        currentURL_Array := readURLFile()
+        currentURL_Array := readFile(URL_FILE_LOCATION, true)
     }
     If (booleanGetLength = true)
     {
@@ -654,7 +656,7 @@ saveSearchBarContentsToFile()
 writeToURLFile(pContent)
 {
     content := pContent
-    tmp := readURLFile()
+    tmp := readFile(URL_FILE_LOCATION, true)
     ; Check if the URL already exists in the file.
     i := getCurrentURL(true, true)
 
@@ -668,31 +670,96 @@ writeToURLFile(pContent)
     FileAppend(content . "`n", URL_FILE_LOCATION)
 }
 
-; Reads the URL.txt file and creates an array object with it.
-readURLFile()
+; Reads a specified file and creates an array object with it.
+; Based on "`n" it will split the document.
+; The parameter booleanCheckIfURL defines if you only want to include
+; URLS and other links into the outcomming array.
+; Returns the created array.
+readFile(pFileLocation, pBooleanCheckIfURL := false)
 {
+    fileLocation := pFileLocation
+    booleanCheckIfURL := pBooleanCheckIfURL
     Try
     {
         ; The loop makes sure, that only URLs are included into the array.
-        URLs := FileRead(URL_FILE_LOCATION)
-        URLarray := []
-        ; URLarray.RemoveAt(1)
+        URLs := FileRead(fileLocation)
+        fileArray := []
         i := 1
         For k, v in StrSplit(URLs, "`n")
         {
-            If !InStr(v, "://")
+            If (!InStr(v, "://") && booleanCheckIfURL = true)
             {
                 Continue
             }
-            URLarray.InsertAt(i, v)
+            fileArray.InsertAt(i, v)
             i := i + 1
         }
-        Return URLarray
+        Return fileArray
     }
     Catch
     {
-        MsgBox("The file does not exist !	`n`nreadURLFile() could not be executed properly", "Error", "O Icon! T3")
+        MsgBox("The file does not exist !	`n`nreadFile() could not be executed properly", "Error", "O Icon! T3")
         Return
+    }
+}
+
+; Checks a given input if it exists on the blacklist.
+; Returns true if a match was found and false otherwise.
+checkBlackListFile(pItemToCompare)
+{
+    itemToCompare := pItemToCompare
+    ; This content will be added to the new created blacklist file.
+    templateArray := ["www.youtube.com/", "hs"]
+    If (!FileExist(BLACKLIST_FILE_LOCATION))
+    {
+        result := MsgBox("Could not find blacklist file.`n`nDo you want to create one?", "Warning !", "YN Icon! T10")
+
+        If (result = "Yes")
+        {
+            Try
+            {
+                ; Creates the blacklist file with the template.
+                Loop templateArray.Length
+                {
+                    FileAppend(templateArray[A_Index], BLACKLIST_FILE_LOCATION)
+                }
+                checkBlackListFile(itemToCompare)
+            }
+            Catch
+            {
+                MsgBox("Could not create file !	`n`nNo one knows why.", "Error", "O Icon! T3")
+                Reload()
+            }
+
+        }
+        Else If (result = "No")
+        {
+            Return ; REWORK?
+        }
+        Else If (result = "Timeout")
+        {
+            Return ; REWORK?
+        }
+    }
+    ; In case something has changed in the blacklist file.
+    Else If (readFile(BLACKLIST_FILE_LOCATION).Length != templateArray.Length)
+    {
+        FileDelete(BLACKLIST_FILE_LOCATION)
+        checkBlackListFile(itemToCompare)
+    }
+    Else
+    {
+        ; Compare the item if it matches with the blacklist.
+        blacklistArray := readFile(BLACKLIST_FILE_LOCATION)
+        Loop blacklistArray.Length
+        {
+            If (InStr(itemToCompare, blacklistArray[A_Index], true))
+            {
+                Return true
+            }
+        }
+        Return false
+
     }
 }
 
@@ -773,6 +840,19 @@ Return
 }
 Return
 
+^F2::
+{
+    Try
+    {
+        Run(BLACKLIST_FILE_LOCATION)
+    }
+    Catch
+    {
+        MsgBox("The blacklist file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
+    }
+}
+Return
+
 F3::
 {
     result := MsgBox("Change format?", "Format change ", "OC Icon? T5")
@@ -801,4 +881,10 @@ Return
 +F4::
 {
     ExitApp()
+}
+Return
+
+F5::
+{
+    MsgBox(checkBlackListFile("hs"))
 }
