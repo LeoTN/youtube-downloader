@@ -8,6 +8,8 @@ CoordMode "Mouse", "Client"
 global URL_FILE_LOCATION := A_ScriptDir . "\YT_URLS.txt"
 ; Specifies path for the .txt file which stores the URL backup.
 global URL_BACKUP_FILE_LOCATION := A_ScriptDir . "\YT_URLS_BACKUP.txt"
+; Specifies path for the .txt file which stores the blacklist file.
+global BLACKLIST_FILE_LOCATION := A_ScriptDir . "\YT_BLACKLIST.txt"
 ; Makes sure every function can open the firefox download instance. Receives an actual string in openDownloadPage().
 global firefoxWindow := ""
 
@@ -54,6 +56,9 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     If (IsSet(pErrorType))
     {
         error := pErrorType
+        ; Reload the page.
+        Send("{Browser_Refresh}")
+        Sleep(500)
     }
     Else
     {
@@ -67,9 +72,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
         }
     }
     maxAttempts := pMaxAttempts
-    ; Reload the page.
-    Send("{Browser_Refresh}")
-    Sleep(500)
+
     ; Error handling section.
     If (error = "Error_Red")
     {
@@ -148,12 +151,8 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     }
     Else If (error = "Error_None")
     {
-        Return true
-        ; Nothing here. Maybe in the future.
-    }
-    Else
-    {
         Return false
+        ; Nothing here. Maybe in the future.
     }
 }
 
@@ -197,6 +196,12 @@ userStartDownload()
             {
                 Sleep(500)
             }
+            ; This means that there was an error found.
+            If (result_1 = true)
+            {
+                Send("{Browser_Refresh}")
+                Sleep(1000)
+            }
         }
     }
     Else
@@ -216,8 +221,6 @@ startDownload(pURL)
         ; Refresh the page so that every button is on it's exact position.
         WinActivate(firefoxWindow)
         Sleep(100)
-        Send("{Browser_Refresh}")
-        Sleep(1000)
         ; Focus text box.
         If (findTextBar() = true)
         {
@@ -568,7 +571,7 @@ getCurrentURL(pBooleanGetLength := false, pBooleanCreateArray := false)
     static currentURL_Array := [""]
     If (booleanCreateArray = true)
     {
-        currentURL_Array := readURLFile()
+        currentURL_Array := readFile(URL_FILE_LOCATION, true)
     }
     If (booleanGetLength = true)
     {
@@ -633,7 +636,7 @@ saveSearchBarContentsToFile()
         {
             clipboardContent := A_Clipboard
             Sleep(100)
-            Send("{Tab}")
+            Send("{Escape}")
             Break
         }
     }
@@ -653,10 +656,10 @@ saveSearchBarContentsToFile()
 writeToURLFile(pContent)
 {
     content := pContent
-    tmp := readURLFile()
+    tmp := readFile(URL_FILE_LOCATION, true)
     ; Check if the URL already exists in the file.
     i := getCurrentURL(true, true)
-
+    ; Content check loop
     Loop (i)
     {
         If (content = tmp[A_Index])
@@ -664,35 +667,129 @@ writeToURLFile(pContent)
             Return
         }
     }
+    If (checkBlackListFile(content) = true)
+    {
+        Return
+    }
     FileAppend(content . "`n", URL_FILE_LOCATION)
 }
 
-; Reads the URL.txt file and creates an array object with it.
-readURLFile()
+; Reads a specified file and creates an array object with it.
+; Based on "`n" it will split the document.
+; The parameter booleanCheckIfURL defines if you only want to include
+; URLS and other links into the outcomming array.
+; Returns the created array.
+readFile(pFileLocation, pBooleanCheckIfURL := false)
 {
+    fileLocation := pFileLocation
+    booleanCheckIfURL := pBooleanCheckIfURL
     Try
     {
         ; The loop makes sure, that only URLs are included into the array.
-        URLs := FileRead(URL_FILE_LOCATION)
-        URLarray := []
-        ; URLarray.RemoveAt(1)
+        URLs := FileRead(fileLocation)
+        fileArray := []
         i := 1
         For k, v in StrSplit(URLs, "`n")
         {
-            If !InStr(v, "://")
+            If (!InStr(v, "://") && booleanCheckIfURL = true)
             {
                 Continue
             }
-            URLarray.InsertAt(i, v)
-            i := i + 1
+            If (v != "")
+            {
+                fileArray.InsertAt(i, v)
+                i++
+            }
         }
-        Return URLarray
+        Return fileArray
     }
     Catch
     {
-        MsgBox("The file does not exist !	`n`nreadURLFile() could not be executed properly", "Error", "O Icon! T3")
+        MsgBox("The file does not exist !	`n`nreadFile() could not be executed properly", "Error", "O Icon! T3")
         Return
     }
+}
+
+; Checks a given input if it exists on the blacklist.
+; Returns true if a match was found and false otherwise.
+checkBlackListFile(pItemToCompare)
+{
+    itemToCompare := pItemToCompare
+    ; This content will be added to the new created blacklist file.
+    ; You can add content to the ignore list by adding it to the .txt file
+    ; or directly to the template array.
+    templateArray := ["https://www.youtube.com/"]
+    If (!FileExist(BLACKLIST_FILE_LOCATION))
+    {
+        result := MsgBox("Could not find blacklist file.`n`nDo you want to create one?", "Warning !", "YN Icon! T10")
+
+        If (result = "Yes")
+        {
+            Try
+            {
+                ; Creates the blacklist file with the template.
+                Loop templateArray.Length
+                {
+                    FileAppend(templateArray[A_Index] . "`n", BLACKLIST_FILE_LOCATION)
+                }
+                checkBlackListFile(itemToCompare)
+            }
+            Catch
+            {
+                MsgBox("Could not create file !	`n`nNo one knows why.", "Error", "O Icon! T3")
+                Reload()
+            }
+
+        }
+        Else If (result = "No")
+        {
+            Return ; REWORK?
+        }
+        Else If (result = "Timeout")
+        {
+            Return ; REWORK?
+        }
+    }
+    ; In case something has changed in the blacklist file.
+    tmpArray := readFile(BLACKLIST_FILE_LOCATION)
+    If (!tmpArray.Has(1))
+    {
+        FileDelete(BLACKLIST_FILE_LOCATION)
+        Return checkBlackListFile(itemToCompare)
+    }
+    Loop templateArray.Length
+    {
+        If (templateArray[A_Index] != tmpArray[A_Index])
+        {
+            FileDelete(BLACKLIST_FILE_LOCATION)
+            Try
+            {
+                ; Creates the blacklist file with the template.
+                Loop templateArray.Length
+                {
+                    FileAppend(templateArray[A_Index] . "`n", BLACKLIST_FILE_LOCATION)
+                }
+            }
+            Catch
+            {
+                MsgBox("Could not create file !	`n`nNo one knows why.", "Error", "O Icon! T3")
+                Reload()
+            }
+        }
+    }
+    ; Compare the item if it matches with the blacklist.
+    ; NOTE : This search method is not case sensitive and
+    ; it does not search like InStr() !
+    blacklistArray := readFile(BLACKLIST_FILE_LOCATION)
+
+    Loop blacklistArray.Length
+    {
+        If (itemToCompare = blacklistArray[A_Index])
+        {
+            Return true
+        }
+    }
+    Return false
 }
 
 manageURLFile()
@@ -746,11 +843,20 @@ F1::
 }
 Return
 
+; Every variation of F2 opens one of the three important .txt files.
+; Opens only one instance each
+; Will be reworked with the implementation of a GUI.
 F2::
 {
     Try
     {
+        If (WinExist("YT_URLS.txt - Editor"))
+        {
+            WinActivate()
+            Return true
+        }
         Run(URL_FILE_LOCATION)
+        Return true
     }
     Catch
     {
@@ -763,11 +869,36 @@ Return
 {
     Try
     {
+        If (WinExist("YT_URLS_BACKUP.txt - Editor"))
+        {
+            WinActivate()
+            Return true
+        }
         Run(URL_BACKUP_FILE_LOCATION)
+        Return true
     }
     Catch
     {
         MsgBox("The backup file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
+    }
+}
+Return
+
+^F2::
+{
+    Try
+    {
+        If (WinExist("YT_BLACKLIST.txt - Editor"))
+        {
+            WinActivate()
+            Return true
+        }
+        Run(BLACKLIST_FILE_LOCATION)
+        Return true
+    }
+    Catch
+    {
+        MsgBox("The blacklist file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
     }
 }
 Return
@@ -800,4 +931,10 @@ Return
 +F4::
 {
     ExitApp()
+}
+Return
+
+F5::
+{
+    MsgBox(checkBlackListFile("https://www.youtube.com/"))
 }
