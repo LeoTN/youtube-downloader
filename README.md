@@ -17,6 +17,8 @@ A simple AutoHotkey script which enables the user to select a list of YouTube vi
  - You can (probably) select as many videos as you want to be downloaded.
  - The download itself should be fast, depending on your internet connection.
  - The script should be able to recover from most common errors (e.g. download site slowly loading, buttons not appearing, etc.).
+ - The script will not add the same URL twice so you don't have to remember each video.
+ - There is also a blacklist file (Press *CTRL + F2* to open) where you can add full URLs you do not want to include.
  - I tried to make the script as simple as possible, so feel free to take a look :)
 
 **Planed features**
