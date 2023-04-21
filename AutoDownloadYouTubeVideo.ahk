@@ -843,11 +843,20 @@ F1::
 }
 Return
 
+; Every variation of F2 opens one of the three important .txt files.
+; Opens only one instance each
+; Will be reworked with the implementation of a GUI.
 F2::
 {
     Try
     {
+        If (WinExist("YT_URLS.txt - Editor"))
+        {
+            WinActivate()
+            Return true
+        }
         Run(URL_FILE_LOCATION)
+        Return true
     }
     Catch
     {
@@ -860,7 +869,13 @@ Return
 {
     Try
     {
+        If (WinExist("YT_URLS_BACKUP.txt - Editor"))
+        {
+            WinActivate()
+            Return true
+        }
         Run(URL_BACKUP_FILE_LOCATION)
+        Return true
     }
     Catch
     {
@@ -873,7 +888,13 @@ Return
 {
     Try
     {
+        If (WinExist("YT_BLACKLIST.txt - Editor"))
+        {
+            WinActivate()
+            Return true
+        }
         Run(BLACKLIST_FILE_LOCATION)
+        Return true
     }
     Catch
     {
