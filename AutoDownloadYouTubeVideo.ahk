@@ -636,7 +636,7 @@ saveSearchBarContentsToFile()
         {
             clipboardContent := A_Clipboard
             Sleep(100)
-            Send("{Tab}")
+            Send("{Escape}")
             Break
         }
     }
@@ -659,13 +659,17 @@ writeToURLFile(pContent)
     tmp := readFile(URL_FILE_LOCATION, true)
     ; Check if the URL already exists in the file.
     i := getCurrentURL(true, true)
-
+    ; Content check loop
     Loop (i)
     {
         If (content = tmp[A_Index])
         {
             Return
         }
+    }
+    If (checkBlackListFile(content) = true)
+    {
+        Return
     }
     FileAppend(content . "`n", URL_FILE_LOCATION)
 }
@@ -684,7 +688,8 @@ readFile(pFileLocation, pBooleanCheckIfURL := false)
         ; The loop makes sure, that only URLs are included into the array.
         URLs := FileRead(fileLocation)
         fileArray := []
-        For i, v in StrSplit(URLs, "`n")
+        i := 1
+        For k, v in StrSplit(URLs, "`n")
         {
             If (!InStr(v, "://") && booleanCheckIfURL = true)
             {
@@ -693,6 +698,7 @@ readFile(pFileLocation, pBooleanCheckIfURL := false)
             If (v != "")
             {
                 fileArray.InsertAt(i, v)
+                i++
             }
         }
         Return fileArray
@@ -710,7 +716,9 @@ checkBlackListFile(pItemToCompare)
 {
     itemToCompare := pItemToCompare
     ; This content will be added to the new created blacklist file.
-    templateArray := ["www.youtube.com/", "h k"]
+    ; You can add content to the ignore list by adding it to the .txt file
+    ; or directly to the template array.
+    templateArray := ["https://www.youtube.com/"]
     If (!FileExist(BLACKLIST_FILE_LOCATION))
     {
         result := MsgBox("Could not find blacklist file.`n`nDo you want to create one?", "Warning !", "YN Icon! T10")
@@ -744,6 +752,11 @@ checkBlackListFile(pItemToCompare)
     }
     ; In case something has changed in the blacklist file.
     tmpArray := readFile(BLACKLIST_FILE_LOCATION)
+    If (!tmpArray.Has(1))
+    {
+        FileDelete(BLACKLIST_FILE_LOCATION)
+        Return checkBlackListFile(itemToCompare)
+    }
     Loop templateArray.Length
     {
         If (templateArray[A_Index] != tmpArray[A_Index])
@@ -765,10 +778,13 @@ checkBlackListFile(pItemToCompare)
         }
     }
     ; Compare the item if it matches with the blacklist.
+    ; NOTE : This search method is not case sensitive and
+    ; it does not search like InStr() !
     blacklistArray := readFile(BLACKLIST_FILE_LOCATION)
+
     Loop blacklistArray.Length
     {
-        If (InStr(itemToCompare, blacklistArray[A_Index], true))
+        If (itemToCompare = blacklistArray[A_Index])
         {
             Return true
         }
@@ -899,5 +915,5 @@ Return
 
 F5::
 {
-    MsgBox(checkBlackListFile("howdenzack h hs"))
+    MsgBox(checkBlackListFile("https://www.youtube.com/"))
 }
