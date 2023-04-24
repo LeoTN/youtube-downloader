@@ -893,14 +893,23 @@ Return
             WinActivate()
             Return true
         }
-        Run(BLACKLIST_FILE_LOCATION)
-        Return true
+        Else If (FileExist(BLACKLIST_FILE_LOCATION))
+        {
+            Run(BLACKLIST_FILE_LOCATION)
+            Return true
+        }
+        Else
+        {
+            ; Calls checkBlackListFile() in order to create a new blacklist file.
+            checkBlackListFile("generateFile")
+        }
     }
     Catch
     {
         MsgBox("The blacklist file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
     }
 }
+
 Return
 
 F3::
