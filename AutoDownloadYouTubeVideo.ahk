@@ -4,6 +4,8 @@ SetWorkingDir A_ScriptDir
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
+#Include "includes\DownloadManager.ahk"
+
 ; Specifies path for the .txt file which stores the URLs.
 global URL_FILE_LOCATION := A_ScriptDir . "\YT_URLS.txt"
 ; Specifies path for the .txt file which stores the URL backup.
@@ -826,7 +828,6 @@ manageURLFile()
 {
     userStartDownload()
 }
-
 Return
 
 ; Second hotkey (collect URLs).
@@ -839,7 +840,14 @@ Return
 ; Will be help file in future.
 F1::
 {
-    manageURLFile()
+    If (FileExist(URL_FILE_LOCATION))
+    {
+        manageURLFile()
+    }
+    Else
+    {
+        MsgBox("The file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
+    }
 }
 Return
 
@@ -946,4 +954,9 @@ Return
 F5::
 {
     MsgBox(checkBlackListFile("https://www.youtube.com/"))
+}
+
+F6::
+{
+    testFunction()
 }
