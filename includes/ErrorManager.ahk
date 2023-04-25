@@ -3,11 +3,7 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "DownloadManager.ahk"
-#Include "FileManager.ahk"
-#Include "GetMethods.ahk"
 #Include "GlobalVariables.ahk"
-#Include "HotKeys.ahk"
 
 ; Beginning of the error related functions.
 
