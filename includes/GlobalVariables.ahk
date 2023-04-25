@@ -11,3 +11,11 @@ global URL_BACKUP_FILE_LOCATION := A_ScriptDir . "\YT_URLS_BACKUP.txt"
 global BLACKLIST_FILE_LOCATION := A_ScriptDir . "\YT_BLACKLIST.txt"
 ; Makes sure every function can open the firefox download instance. Receives an actual string in openDownloadPage().
 global firefoxWindow := ""
+
+/*
+DEBUG SECTION
+-------------------------------------------------
+Add debug variables here.
+*/
+
+global booleanDebugMode := false

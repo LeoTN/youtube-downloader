@@ -5,6 +5,27 @@ CoordMode "Mouse", "Client"
 
 #Include "GlobalVariables.ahk"
 
+/*
+DEBUG SECTION
+-------------------------------------------------
+Hotkey to disable/enable debug mode.
+*/
+^+!F1::
+{
+    global booleanDebugMode
+    If (booleanDebugMode = true)
+    {
+        booleanDebugMode := false
+        MsgBox("Debug mode has been disabled.", "DEBUG MODE", "O Iconi 262144 T1.5")
+    }
+    Else If (booleanDebugMode = false)
+    {
+        booleanDebugMode := true
+        MsgBox("Debug mode has been enabled.", "DEBUG MODE", "O Icon! 262144 T1.5")
+    }
+    Return
+}
+
 ; Beginning of all standard script hotkeys.
 
 ; Main hotkey (start download).
