@@ -1,9 +1,10 @@
-﻿; NOTE : This is the main .ahk file which has to be started !!!
+; NOTE : This is the main .ahk file which has to be started !!!
 #SingleInstance Force
 SendMode "Input"
 SetWorkingDir A_ScriptDir
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
+
 ; Imports important functions and variables
 ; Sets the directory for all following files.
 #Include "includes\"
