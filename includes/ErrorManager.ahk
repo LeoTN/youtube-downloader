@@ -103,7 +103,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
         If (result = "OK")
         {
             ; Manual download.
-            MsgBox("Manual download is reqired.`n`nPress OK when you want to continue `nexecution of the script !", "Warning !", "O Icon! 8192") ; Will be automatic in future.
+            MsgBox("Manual download is required.`n`nPress OK when you want to continue `nexecution of the script !", "Action required !", "O Icon! 8192") ; Will be automatic in future.
 
             finished := unset
             finished := handleErrors_skipURL()

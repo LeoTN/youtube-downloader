@@ -45,7 +45,14 @@ Return
 ; Will be help file in future.
 F1::
 {
-    manageURLFile()
+    If (FileExist(URL_FILE_LOCATION))
+    {
+        manageURLFile()
+    }
+    Else
+    {
+        MsgBox("The  URL file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
+    }
 }
 Return
 
@@ -66,7 +73,7 @@ F2::
     }
     Catch
     {
-        MsgBox("The file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
+        MsgBox("The URL file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
     }
 }
 Return
@@ -85,7 +92,7 @@ Return
     }
     Catch
     {
-        MsgBox("The backup file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
+        MsgBox("The URL backup file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
     }
 }
 Return
@@ -112,7 +119,7 @@ Return
     }
     Catch
     {
-        MsgBox("The blacklist file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
+        MsgBox("The URL blacklist file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
     }
 }
 
@@ -122,7 +129,7 @@ F3::
 {
     result := MsgBox("Change format?", "Format change ", "OC Icon? T5")
 
-    If (result = "Ok")
+    If (result = "OK")
     {
         toggleDownloadFormat()
     }
@@ -139,20 +146,60 @@ Return
 
 F4::
 {
+    ; Number in seconds.
+    i := 3
+    while (i > 0)
+    {
+        If (i = 1)
+        {
+            result := MsgBox("The script will be RELOADED in " . i " second.", "Script restart", "OC Icon! T1 Default2")
+        }
+        Else
+        {
+            result := MsgBox("The script will be RELOADED in " . i " seconds.", "Script restart", "OC Icon! T1 Default2")
+        }
+        i--
+        If (result = "Cancel")
+        {
+            Return
+        }
+        Else If (result = "OK")
+        {
+            MsgBox("Script has been reloaded.", "Script status", "O Iconi T1.5")
+            Reload()
+        }
+    }
+    MsgBox("Script has been reloaded.", "Script status", "O Iconi T1.5")
     Reload()
 }
 Return
 
 +F4::
 {
-    result := MsgBox("The script will be terminated.", "Script termination ?", "OC Iconi T3")
-    If (result = "Cancel")
+    ; Number in seconds.
+    i := 3
+    while (i > 0)
     {
-        Return
+        If (i = 1)
+        {
+            result := MsgBox("The script will be TERMINATED in " . i " second.", "Script termination", "OC Icon! T1 Default2")
+        }
+        Else
+        {
+            result := MsgBox("The script will be TERMINATED in " . i " seconds.", "Script termination", "OC Icon! T1 Default2")
+        }
+        i--
+        If (result = "Cancel")
+        {
+            Return
+        }
+        Else If (result = "OK")
+        {
+            MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
+            ExitApp()
+        }
     }
-    Else
-    {
-        ExitApp()
-    }
+    MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
+    ExitApp()
 }
 Return
