@@ -25,9 +25,31 @@ Add debug hotkeys here.
 ; Debug hotkey template.
 F5::
 {
-    If (booleanDebugMode = true)
+    If (readConfigFile(4) = true)
     {
         ; Enter code below.
+        createDefaultConfigFile(true)
+    }
+    Return
+}
+
+F6::
+{
+    If (readConfigFile(4) = true)
+    {
+        ; Enter code below.
+        MsgBox(readConfigFile(3))
+    }
+    Return
+}
+
+F7::
+{
+    If (readConfigFile(4) = true)
+    {
+        ; Enter code below.
+        editConfigFile(3, "howdwdwdwddenzack")
+        MsgBox(readConfigFile(3))
     }
     Return
 }

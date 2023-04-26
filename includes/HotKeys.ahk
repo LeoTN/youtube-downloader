@@ -3,24 +3,24 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "GlobalVariables.ahk"
+#Include "ConfigFileManager.ahk"
 
 /*
 DEBUG SECTION
 -------------------------------------------------
 Hotkey to disable/enable debug mode.
 */
+
 ^+!F1::
 {
-    global booleanDebugMode
-    If (booleanDebugMode = true)
+    If (readConfigFile(4) = true)
     {
-        booleanDebugMode := false
+        editConfigFile(4, false)
         MsgBox("Debug mode has been disabled.", "DEBUG MODE", "O Iconi 262144 T1.5")
     }
-    Else If (booleanDebugMode = false)
+    Else If (readConfigFile(4) = false)
     {
-        booleanDebugMode := true
+        editConfigFile(4, true)
         MsgBox("Debug mode has been enabled.", "DEBUG MODE", "O Icon! 262144 T1.5")
     }
     Return
@@ -45,7 +45,7 @@ Return
 ; Will be help file in future.
 F1::
 {
-    If (FileExist(URL_FILE_LOCATION))
+    If (FileExist(readConfigFile(1)))
     {
         manageURLFile()
     }
@@ -68,7 +68,7 @@ F2::
             WinActivate()
             Return true
         }
-        Run(URL_FILE_LOCATION)
+        Run(readConfigFile(1))
         Return true
     }
     Catch
@@ -87,7 +87,7 @@ Return
             WinActivate()
             Return true
         }
-        Run(URL_BACKUP_FILE_LOCATION)
+        Run(readConfigFile(2))
         Return true
     }
     Catch
@@ -106,9 +106,9 @@ Return
             WinActivate()
             Return true
         }
-        Else If (FileExist(BLACKLIST_FILE_LOCATION))
+        Else If (FileExist(readConfigFile(3)))
         {
-            Run(BLACKLIST_FILE_LOCATION)
+            Run(readConfigFile(3))
             Return true
         }
         Else
@@ -122,8 +122,32 @@ Return
         MsgBox("The URL blacklist file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
     }
 }
-
 Return
+
+!F2::
+{
+    Try
+    {
+        If (WinExist("ytdownloader.ini - Editor"))
+        {
+            WinActivate()
+            Return true
+        }
+        Else If (FileExist(readConfigFile(4)))
+        {
+            Run(readConfigFile(4))
+            Return true
+        }
+        Else
+        {
+            createDefaultConfigFile()
+        }
+    }
+    Catch
+    {
+        MsgBox("The script's config file does not exist !	`n`nA fatal error has occured.", "Error", "O Icon! T3")
+    }
+}
 
 F3::
 {

@@ -3,7 +3,7 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "GlobalVariables.ahk"
+#Include "ConfigFileManager.ahk"
 
 ; Beginning of relevant getMethods.
 
@@ -51,7 +51,7 @@ getCurrentURL(pBooleanGetLength := false, pBooleanCreateArray := false)
     static currentURL_Array := [""]
     If (booleanCreateArray = true)
     {
-        currentURL_Array := readFile(URL_FILE_LOCATION, true)
+        currentURL_Array := readFile(readConfigFile(1), true)
     }
     If (booleanGetLength = true)
     {
