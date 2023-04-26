@@ -3,13 +3,13 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "GlobalVariables.ahk"
+#Include "ConfigFileManager.ahk"
 
 ; Beginning of the download related functions.
 
 userStartDownload()
 {
-    If FileExist(URL_FILE_LOCATION)
+    If FileExist(readConfigFile(1))
     {
         openDownloadPage()
         i := getCurrentURL(true, true)
@@ -72,6 +72,8 @@ startDownload(pURL)
                     {
                         If (getCurrentURL(true) <= 0)
                         {
+                            ; Ensures that the download has started before sending close command to the browser.
+                            Sleep(2000)
                             result := MsgBox("Would you like to close the browser instance now?", "Download completed !", "36 T5")
 
                             If (result = "Yes")
