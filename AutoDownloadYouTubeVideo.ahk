@@ -23,33 +23,23 @@ Add debug hotkeys here.
 */
 
 ; Debug hotkey template.
-F5::
+F6::
 {
-    If (readConfigFile(4) = true)
+    If (readConfigFile(1) = true)
     {
         ; Enter code below.
         createDefaultConfigFile(true)
-    }
-    Return
-}
-
-F6::
-{
-    If (readConfigFile(4) = true)
-    {
-        ; Enter code below.
-        MsgBox(readConfigFile(3))
+        MsgBox("The config file has been reset.", "Information", "O Iconi T2")
     }
     Return
 }
 
 F7::
 {
-    If (readConfigFile(4) = true)
+    If (readConfigFile(1) = true)
     {
         ; Enter code below.
-        editConfigFile(3, "howdwdwdwddenzack")
-        MsgBox(readConfigFile(3))
+        MsgBox(readConfigFile(2))
     }
     Return
 }

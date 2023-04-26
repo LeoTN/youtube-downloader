@@ -51,7 +51,7 @@ getCurrentURL(pBooleanGetLength := false, pBooleanCreateArray := false)
     static currentURL_Array := [""]
     If (booleanCreateArray = true)
     {
-        currentURL_Array := readFile(readConfigFile(1), true)
+        currentURL_Array := readFile(readConfigFile(2), true)
     }
     If (booleanGetLength = true)
     {
