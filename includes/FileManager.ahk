@@ -3,7 +3,7 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "GlobalVariables.ahk"
+#Include "ConfigFileManager.ahk"
 
 ; Beginning of the file manager functions.
 
@@ -27,14 +27,14 @@ saveSearchBarContentsToFile()
         }
     }
 
-    If (FileExist(URL_FILE_LOCATION))
+    If (FileExist(readConfigFile(2)))
     {
 
         writeToURLFile(clipboardContent)
     }
     Else
     {
-        FileAppend("Made by Donnerbaer" . "`n", URL_FILE_LOCATION)
+        FileAppend("Made by Donnerbaer" . "`n", readConfigFile(2))
         writeToURLFile(clipboardContent)
     }
 }
@@ -42,7 +42,7 @@ saveSearchBarContentsToFile()
 writeToURLFile(pContent)
 {
     content := pContent
-    tmp := readFile(URL_FILE_LOCATION, true)
+    tmp := readFile(readConfigFile(2), true)
     ; Check if the URL already exists in the file.
     i := getCurrentURL(true, true)
     ; Content check loop
@@ -57,7 +57,7 @@ writeToURLFile(pContent)
     {
         Return
     }
-    FileAppend(content . "`n", URL_FILE_LOCATION)
+    FileAppend(content . "`n", readConfigFile(2))
 }
 
 ; Reads a specified file and creates an array object with it.
@@ -105,7 +105,7 @@ checkBlackListFile(pItemToCompare)
     ; You can add content to the ignore list by adding it to the .txt file
     ; or directly to the template array.
     templateArray := ["https://www.youtube.com/"]
-    If (!FileExist(BLACKLIST_FILE_LOCATION))
+    If (!FileExist(readConfigFile(4)))
     {
         result := MsgBox("Could not find blacklist file.`n`nDo you want to create one?", "Warning !", "YN Icon! T10")
 
@@ -116,13 +116,13 @@ checkBlackListFile(pItemToCompare)
                 ; Creates the blacklist file with the template.
                 Loop templateArray.Length
                 {
-                    FileAppend(templateArray[A_Index] . "`n", BLACKLIST_FILE_LOCATION)
+                    FileAppend(templateArray[A_Index] . "`n", readConfigFile(4))
                 }
                 checkBlackListFile(itemToCompare)
             }
             Catch
             {
-                MsgBox("Could not create file !	`n`nNo one knows why.", "Error", "O Icon! T3")
+                MsgBox("Could not create file !	`n`nCheck the config file for a valid path.", "Error", "O Icon! T3")
                 Reload()
             }
 
@@ -137,23 +137,23 @@ checkBlackListFile(pItemToCompare)
         }
     }
     ; In case something has changed in the blacklist file.
-    tmpArray := readFile(BLACKLIST_FILE_LOCATION)
+    tmpArray := readFile(readConfigFile(4))
     If (!tmpArray.Has(1))
     {
-        FileDelete(BLACKLIST_FILE_LOCATION)
+        FileDelete(readConfigFile(4))
         Return checkBlackListFile(itemToCompare)
     }
     Loop templateArray.Length
     {
         If (templateArray[A_Index] != tmpArray[A_Index])
         {
-            FileDelete(BLACKLIST_FILE_LOCATION)
+            FileDelete(readConfigFile(4))
             Try
             {
                 ; Creates the blacklist file with the template.
                 Loop templateArray.Length
                 {
-                    FileAppend(templateArray[A_Index] . "`n", BLACKLIST_FILE_LOCATION)
+                    FileAppend(templateArray[A_Index] . "`n", readConfigFile(4))
                 }
             }
             Catch
@@ -166,7 +166,7 @@ checkBlackListFile(pItemToCompare)
     ; Compare the item if it matches with the blacklist.
     ; NOTE : This search method is not case sensitive and
     ; it does not search like InStr() !
-    blacklistArray := readFile(BLACKLIST_FILE_LOCATION)
+    blacklistArray := readFile(readConfigFile(4))
 
     Loop blacklistArray.Length
     {
@@ -186,7 +186,7 @@ manageURLFile()
     {
         Try
         {
-            FileMove(URL_FILE_LOCATION, A_ScriptDir . "\YT_URLS_BACKUP.txt", 1)
+            FileMove(readConfigFile(2), readConfigFile(3), true)
             Sleep(100)
             Reload()
         }
