@@ -9,7 +9,7 @@ CoordMode "Mouse", "Client"
 
 userStartDownload()
 {
-    If FileExist(readConfigFile(1))
+    If FileExist(readConfigFile(2))
     {
         openDownloadPage()
         i := getCurrentURL(true, true)
@@ -73,7 +73,7 @@ startDownload(pURL)
                         If (getCurrentURL(true) <= 0)
                         {
                             ; Ensures that the download has started before sending close command to the browser.
-                            Sleep(2000)
+                            Sleep(3000)
                             result := MsgBox("Would you like to close the browser instance now?", "Download completed !", "36 T5")
 
                             If (result = "Yes")

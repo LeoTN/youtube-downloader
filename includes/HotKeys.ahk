@@ -13,15 +13,15 @@ Hotkey to disable/enable debug mode.
 
 ^+!F1::
 {
-    If (readConfigFile(4) = true)
+    If (readConfigFile(1) = true)
     {
-        editConfigFile(4, false)
-        MsgBox("Debug mode has been disabled.", "DEBUG MODE", "O Iconi 262144 T1.5")
+        editConfigFile(1, false)
+        MsgBox("Debug mode has been disabled.", "DEBUG MODE", "O Iconi 262144 T1")
     }
-    Else If (readConfigFile(4) = false)
+    Else If (readConfigFile(1) = false)
     {
-        editConfigFile(4, true)
-        MsgBox("Debug mode has been enabled.", "DEBUG MODE", "O Icon! 262144 T1.5")
+        editConfigFile(1, true)
+        MsgBox("Debug mode has been enabled.", "DEBUG MODE", "O Icon! 262144 T1")
     }
     Return
 }
@@ -45,7 +45,7 @@ Return
 ; Will be help file in future.
 F1::
 {
-    If (FileExist(readConfigFile(1)))
+    If (FileExist(readConfigFile(2)))
     {
         manageURLFile()
     }
@@ -68,7 +68,7 @@ F2::
             WinActivate()
             Return true
         }
-        Run(readConfigFile(1))
+        Run(readConfigFile(2))
         Return true
     }
     Catch
@@ -87,7 +87,7 @@ Return
             WinActivate()
             Return true
         }
-        Run(readConfigFile(2))
+        Run(readConfigFile(3))
         Return true
     }
     Catch
@@ -106,9 +106,9 @@ Return
             WinActivate()
             Return true
         }
-        Else If (FileExist(readConfigFile(3)))
+        Else If (FileExist(readConfigFile(4)))
         {
-            Run(readConfigFile(3))
+            Run(readConfigFile(4))
             Return true
         }
         Else
