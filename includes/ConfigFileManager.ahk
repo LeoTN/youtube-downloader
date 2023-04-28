@@ -100,6 +100,7 @@ createDefaultConfigFile(pBooleanCreateBackUp := true)
         {
             IniWrite(%configVariableNameArray[A_Index]%, configFileLocation, configSectionNameArray[A_Index], configVariableNameArray[A_Index])
         }
+        MsgBox("A default config file has been generated.", "Information", "O Iconi T3")
     }
     Return
 }
