@@ -133,9 +133,9 @@ Return
             WinActivate()
             Return true
         }
-        Else If (FileExist(readConfigFile(4)))
+        Else If (FileExist(readConfigFile(1)))
         {
-            Run(readConfigFile(4))
+            Run(readConfigFile(1))
             Return true
         }
         Else
