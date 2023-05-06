@@ -8,11 +8,20 @@ CoordMode "Mouse", "Client"
 ; Imports important functions and variables
 ; Sets the directory for all following files.
 #Include "includes\"
+#Include "ConfigFileManager.ahk"
+onInit()
 #Include "DownloadManager.ahk"
 #Include "FileManager.ahk"
 #Include "ErrorManager.ahk"
 #Include "GetMethods.ahk"
 #Include "HotKeys.ahk"
+
+; Runs a list of commands when the script is launched.
+onInit()
+{
+    ; Only called to check the config file status.
+    readConfigFile()
+}
 
 ; NOTE : This script currently only works with firefox as your default browser!
 
