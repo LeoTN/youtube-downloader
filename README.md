@@ -23,8 +23,8 @@ A simple AutoHotkey script which enables the user to select a list of YouTube vi
 
 **Planed features**
 
- - Adding a setup with a config file, you can define various settings and customisation for example changing the hotkeys.
- - Make the script more reliable, as it is still in beta.
+ - Improving the customisation options in the config file.
+ - Make the script more reliable, as it is still in development.
  - Support for more browsers than Firefox.
 
 ## Important
