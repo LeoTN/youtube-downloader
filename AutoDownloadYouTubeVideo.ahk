@@ -9,11 +9,11 @@ CoordMode "Mouse", "Client"
 ; Sets the directory for all following files.
 #Include "includes\"
 #Include "ConfigFileManager.ahk"
-onInit()
 #Include "DownloadManager.ahk"
 #Include "FileManager.ahk"
 #Include "ErrorManager.ahk"
 #Include "GetMethods.ahk"
+onInit()
 #Include "HotKeys.ahk"
 
 ; Runs a list of commands when the script is launched.
