@@ -42,8 +42,7 @@ Return
 }
 Return
 
-; Will be help file in future.
-F1::
+clearURLFile()
 {
     If (FileExist(readConfigFile(2)))
     {
@@ -53,13 +52,12 @@ F1::
     {
         MsgBox("The  URL file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
     }
+    Return
 }
-Return
 
-; Every variation of F2 opens one of the three important .txt files.
 ; Opens only one instance each
 ; Will be reworked with the implementation of a GUI.
-F2::
+openURLFile()
 {
     Try
     {
@@ -75,10 +73,10 @@ F2::
     {
         MsgBox("The URL file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
     }
+    Return
 }
-Return
 
-+F2::
+openURLBackUpFile()
 {
     Try
     {
@@ -94,10 +92,10 @@ Return
     {
         MsgBox("The URL backup file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
     }
+    Return
 }
-Return
 
-^F2::
+openURLBlacklistFile()
 {
     Try
     {
@@ -121,10 +119,10 @@ Return
     {
         MsgBox("The URL blacklist file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
     }
+    Return
 }
-Return
 
-!F2::
+openConfigFile()
 {
     Try
     {
@@ -147,9 +145,10 @@ Return
     {
         MsgBox("The script's config file does not exist !	`n`nA fatal error has occured.", "Error", "O Icon! T3")
     }
+    Return
 }
 
-F3::
+changeDownloadFormatPrompt()
 {
     result := MsgBox("Change format?", "Format change ", "OC Icon? T5")
 
@@ -165,10 +164,10 @@ F3::
     {
         ; Rework in the future
     }
+    Return
 }
-Return
 
-F4::
+reloadScriptPrompt()
 {
     ; Number in seconds.
     i := 3
@@ -195,10 +194,10 @@ F4::
     }
     MsgBox("Script has been reloaded.", "Script status", "O Iconi T1.5")
     Reload()
+    Return
 }
-Return
 
-+F4::
+terminateScriptPrompt()
 {
     ; Number in seconds.
     i := 3
@@ -225,5 +224,5 @@ Return
     }
     MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
     ExitApp()
+    Return
 }
-Return

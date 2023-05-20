@@ -14,7 +14,7 @@ CoordMode "Mouse", "Client"
 #Include "ErrorManager.ahk"
 #Include "GetMethods.ahk"
 onInit()
-#Include "HotKeys.ahk"
+#Include "HotKeys & Methods.ahk"
 
 ; Runs a list of commands when the script is launched.
 onInit()
