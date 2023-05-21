@@ -33,8 +33,8 @@ Hotkey to disable/enable debug mode.
 ^+!d::
 {
     userStartDownload()
+    Return
 }
-Return
 
 ; Second hotkey (collect URLs).
 ^+!s::
