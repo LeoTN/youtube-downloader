@@ -20,7 +20,7 @@ userStartDownload()
         i := getCurrentURL(true, true)
         Loop (i)
         {
-            ; Waits for startDownload() to finish
+            ; Waits for startDownload() to finish.
             result_1 := unset
             result_1 := startDownload(getCurrentURL(false))
             while (IsSet(result_1) = false)
@@ -129,7 +129,6 @@ startDownload(pURL)
     {
         openDownloadPage()
     }
-
 }
 
 ; If necessary the function will open a new firefox window and the download tab within it.

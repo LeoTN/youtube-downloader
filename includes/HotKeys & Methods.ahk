@@ -40,8 +40,15 @@ Return
 ^+!s::
 {
     saveSearchBarContentsToFile()
+    Return
 }
-Return
+
+; Third hotkey (collect URLs from video thumbnail).
+^+!f::
+{
+    saveVideoURLDirectlyToFile()
+    Return
+}
 
 ; GUI hotkey (opens GUI).
 ^+!g::
@@ -58,8 +65,8 @@ Return
         myGUI.Hide()
         flipflop := true
     }
+    Return
 }
-Return
 
 clearURLFile()
 {
