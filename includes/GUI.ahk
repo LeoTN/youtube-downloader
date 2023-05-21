@@ -4,8 +4,9 @@ CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 #Warn All, Off ;REMOVE !
 
-;#Include "ConfigFileManager.ahk"
-;#Include "HotKeys & Methods.ahk"
+; WARNING ! GUI IN TEST PHASE
+#Include "ConfigFileManager.ahk"
+#Include "HotKeys & Methods.ahk"
 
 myGUI := Gui(, "YouTube Downloader Control Panel")
 
@@ -34,10 +35,10 @@ fileMenu.Add("&Open...", fileSelectionMenuOpen)
 fileMenu.Add("&Delete...", fileSelectionMenuDelete)
 
 helpMenu := Menu()
-helpMenu.Add "Info", (*) => MsgBox("Nicht implementiert")
+; Add help doc in the future.
+helpMenu.Add "Info", (*) => MsgBox("Add help here")
 allMenus := MenuBar()
-allMenus.Add "&File", fileMenu  ; Fügt die zwei oben erstellten Untermenüs hinzu.
+allMenus.Add "&File", fileMenu
 allMenus.Add "&?", helpMenu
 myGUI := Gui()
 myGUI.MenuBar := allMenus
-myGUI.Show "w300 h200"

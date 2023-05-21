@@ -4,6 +4,7 @@ CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
 #Include "ConfigFileManager.ahk"
+#Include "GUI.ahk"
 
 /*
 DEBUG SECTION
@@ -39,6 +40,24 @@ Return
 ^+!s::
 {
     saveSearchBarContentsToFile()
+}
+Return
+
+; GUI hotkey (opens GUI).
+^+!g::
+{
+    static flipflop := true
+    If (!WinExist("ahk_id " . myGUI.Hwnd))
+    {
+        myGUI.Show("w300 h200")
+        flipflop := false
+        Return
+    }
+    If (flipflop = false)
+    {
+        myGUI.Hide()
+        flipflop := true
+    }
 }
 Return
 
