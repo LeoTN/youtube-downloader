@@ -9,29 +9,34 @@ CoordMode "Mouse", "Client"
 
 userStartDownload()
 {
-    If FileExist(readConfigFile(2))
+    If (FileExist(readConfigFile(2)))
     {
         openDownloadPage()
+        ; In case someone decides to download as MP3 by default.
+        If (readConfigFile(6) = "MP3")
+        {
+            setDownloadFormat("MP3")
+        }
         i := getCurrentURL(true, true)
         Loop (i)
         {
-            ; Waits for startDownload() to finish
-            result := unset
-            result := startDownload(getCurrentURL(false))
-            while (IsSet(result) = false)
+            ; Waits for startDownload() to finish.
+            result_1 := unset
+            result_1 := startDownload(getCurrentURL(false))
+            while (IsSet(result_1) = false)
             {
                 Sleep(500)
             }
 
             ; Checks for common errors.
-            result_1 := unset
-            result_1 := handleErrors()
-            while (IsSet(result_1) = false)
+            result_2 := unset
+            result_2 := handleErrors()
+            while (IsSet(result_2) = false)
             {
                 Sleep(500)
             }
             ; This means that there was an error found.
-            If (result_1 = true)
+            If (result_2 = true)
             {
                 Send("{Browser_Refresh}")
                 Sleep(1000)
@@ -58,16 +63,16 @@ startDownload(pURL)
         ; Focus text box.
         If (findTextBar() = true)
         {
-            Sleep(500)
+            Sleep(readConfigFile(5))
             Send(URL)
-            Sleep(500)
+            Sleep(readConfigFile(5))
             ; Click start button.
             If (findStartButton() = true)
             {
                 ; Wait for the website to process.
                 If (waitForDownloadButton() = true)
                 {
-                    Sleep(500)
+                    Sleep(readConfigFile(5))
                     If (findDownloadButton() = true)
                     {
                         If (getCurrentURL(true) <= 0)
@@ -124,7 +129,6 @@ startDownload(pURL)
     {
         openDownloadPage()
     }
-
 }
 
 ; If necessary the function will open a new firefox window and the download tab within it.
@@ -134,16 +138,17 @@ openDownloadPage()
     ; Just a random number
     static firefoxID := 123456789
     global firefoxWindow
+    If (!WinExist("ahk_id " . firefoxID))
     {
-        If (!WinExist("ahk_id " . firefoxID))
-        {
-            Run(firefoxLocation)
-            Sleep(500)
-            firefoxID := WinGetID("A")
-            firefoxWindow := "ahk_id " . firefoxID
-        }
+        Run(firefoxLocation)
+        Sleep(readConfigFile(5))
+        firefoxID := WinGetID("A")
+        firefoxWindow := "ahk_id " . firefoxID
+    }
+    If (findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox") = false)
+    {
         ; Wait time depends on the system speed.
-        Sleep(500)
+        Sleep(readConfigFile(5))
         Try
         {
             Run("https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist")
@@ -154,7 +159,6 @@ openDownloadPage()
             Run("https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist")
         }
     }
-
     ; Waits for the download tab to appear.
     w := 1
     While (w = 1)
@@ -162,7 +166,7 @@ openDownloadPage()
         currentTabName := WinGetTitle(firefoxWindow)
         If (currentTabName = "YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
         {
-            Sleep(500)
+            Sleep(readConfigFile(5))
             Break
         }
     }
@@ -345,6 +349,10 @@ setDownloadFormat(pFormat)
         Sleep(100)
         MouseMove(795, 335)
         Send("{Click}")
+    }
+    Else
+    {
+        MsgBox("Could execute setDownloadFormat() properly !`nCheck the config file for a valid format at : `n " . configVariableNameArray[6], "Error", "O Icon! T10")
     }
 }
 

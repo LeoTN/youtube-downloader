@@ -50,7 +50,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
         error := pErrorType
         ; Reload the page.
         Send("{Browser_Refresh}")
-        Sleep(500)
+        Sleep(readConfigFile(5))
     }
     Else
     {
@@ -137,7 +137,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     Else If (error = "Error_Black_2")
     {
         WinClose(firefoxWindow)
-        Sleep(500)
+        Sleep(readConfigFile(5))
         openDownloadPage()
         Return true
     }

@@ -32,6 +32,13 @@ URL_FILE_LOCATION := A_ScriptDir . "\files\YT_URLS.txt"
 URL_BACKUP_FILE_LOCATION := A_ScriptDir . "\files\YT_URLS_BACKUP.txt"
 ; Specifies path for the .txt file which stores the blacklist file.
 BLACKLIST_FILE_LOCATION := A_ScriptDir . "\files\YT_BLACKLIST.txt"
+; Is a number in milliseconds to determine the standard wait time.
+; The standard wait time can be increased if you are on a slow system
+; or decreased when your computer is a quantum computer.
+; NOTE : Changing this value at your own risk ! May lead to errors.
+STANDARD_WAIT_TIME := 500
+; Sets the default download format for your collected URLs.
+STANDARD_DOWNLOAD_FORMAT := "MP4"
 
 ;------------------------------------------------
 
@@ -50,7 +57,9 @@ configVariableNameArray := [
     "booleanDebugMode",
     "URL_FILE_LOCATION",
     "URL_BACKUP_FILE_LOCATION",
-    "BLACKLIST_FILE_LOCATION"
+    "BLACKLIST_FILE_LOCATION",
+    "STANDARD_WAIT_TIME",
+    "STANDARD_DOWNLOAD_FORMAT"
 ]
 ; Create an array including the matching section name for EACH item in the configVariableNameArray.
 ; This makes it easier to read and write the config file.
@@ -59,7 +68,9 @@ configSectionNameArray := [
     "DebugSettings",
     "FileLocations",
     "FileLocations",
-    "FileLocations"
+    "FileLocations",
+    "Optimisation",
+    "Optimisation"
 ]
 
 /*

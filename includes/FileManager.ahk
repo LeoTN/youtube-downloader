@@ -26,7 +26,6 @@ saveSearchBarContentsToFile()
             Break
         }
     }
-
     If (FileExist(readConfigFile(2)))
     {
 
@@ -37,6 +36,39 @@ saveSearchBarContentsToFile()
         FileAppend("Made by Donnerbaer" . "`n", readConfigFile(2))
         writeToURLFile(clipboardContent)
     }
+}
+
+; Saves the video URL directly by hovering over the video thumbnail on the start page.
+saveVideoURLDirectlyToFile()
+{
+    lastContent := A_Clipboard
+    A_Clipboard := ""
+    MouseClick("Right")
+    ; Do not decrease values ! May lead to unstable performance.
+    Sleep(65)
+    ; Probably only works with German Firefox version.
+    ; Will be language specific in the future.
+    Send("k")
+    Clipwait(0.35)
+    If (lastContent = A_Clipboard || A_Clipboard = "")
+    {
+        MsgBox("No URL detected or same URL selected twice.", "Attention !", "O Icon! T1.5")
+        Return
+    }
+    Else
+    {
+        clipboardContent := A_Clipboard
+        If (FileExist(readConfigFile(2)))
+        {
+            writeToURLFile(clipboardContent)
+        }
+        Else
+        {
+            FileAppend("Made by Donnerbaer" . "`n", readConfigFile(2))
+            writeToURLFile(clipboardContent)
+        }
+    }
+    Return
 }
 
 writeToURLFile(pContent)
