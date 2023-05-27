@@ -45,7 +45,7 @@ saveVideoURLDirectlyToFile()
     A_Clipboard := ""
     MouseClick("Right")
     ; Do not decrease values ! May lead to unstable performance.
-    Sleep(65)
+    Sleep(100)
     ; Probably only works with German Firefox version.
     ; Will be language specific in the future.
     Send("k")
@@ -157,15 +157,10 @@ checkBlackListFile(pItemToCompare)
                 MsgBox("Could not create file !	`n`nCheck the config file for a valid path.", "Error", "O Icon! T3")
                 Reload()
             }
-
         }
-        Else If (result = "No")
+        Else If (result = "No" || "Timeout")
         {
-            Return ; REWORK?
-        }
-        Else If (result = "Timeout")
-        {
-            Return ; REWORK?
+            Return
         }
     }
     ; In case something has changed in the blacklist file.
@@ -229,11 +224,7 @@ manageURLFile()
         }
 
     }
-    Else If (result = "No")
-    {
-        Reload()
-    }
-    Else If (result = "Timeout")
+    Else If (result = "No" || "Timeout")
     {
         Reload()
     }

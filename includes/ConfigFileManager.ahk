@@ -145,12 +145,7 @@ readConfigFile(pVariableNameArrayIndex := 0)
                 readConfigFile(variableNameArrayIndex)
                 Return
             }
-            Else If (result = "No")
-            {
-                MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
-                ExitApp()
-            }
-            Else If (result = "Timeout")
+            Else If (result = "No" || "Timeout")
             {
                 MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
                 ExitApp()
@@ -212,18 +207,13 @@ readConfigFile(pVariableNameArrayIndex := 0)
                         ExitApp()
                     }
                 }
-                Else If (result = "No")
+                Else If (result = "No" || "Timeout")
                 {
                     MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
                     ExitApp()
                     ExitApp()
                 }
-                Else If (result = "Timeout")
-                {
-                    MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
-                    ExitApp()
-                    ExitApp()
-                }
+                ExitApp()
             }
         }
     }

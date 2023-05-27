@@ -82,7 +82,6 @@ clearURLFile()
 }
 
 ; Opens only one instance each
-; Will be reworked with the implementation of a GUI.
 openURLFile()
 {
     Try
@@ -174,6 +173,49 @@ openConfigFile()
     Return
 }
 
+deleteFilePrompt(pFileName)
+{
+    fileName := pFileName
+    result := MsgBox("Would you like to delete the " . fileName . " ?", "Delete " . fileName, "YN Icon! 8192 T10")
+    If (result = "Yes")
+    {
+        MsgBox(A_WorkingDir . "\files\deleted")
+        If (!DirExist(A_WorkingDir . "\files\deleted"))
+        {
+            MsgBox("Mac")
+            DirCreate(A_WorkingDir . "\files\deleted")
+        }
+        Switch (fileName)
+        {
+            Case "URL-File":
+                {
+                    SplitPath(readConfigFile(2), &outFileName)
+                    FileMove(readConfigFile(2), A_WorkingDir . "\files\deleted\" . outFileName)
+                }
+            Case "URL-BackUp-File":
+                {
+                    SplitPath(readConfigFile(3), &outFileName)
+                    FileMove(readConfigFile(3), A_WorkingDir . "\files\deleted\" . outFileName)
+                }
+            Case "URL-Blacklist-File":
+                {
+                    SplitPath(readConfigFile(3), &outFileName)
+                    FileMove(readConfigFile(3), A_WorkingDir . "\files\deleted\" . outFileName)
+                }
+            Case "Downloaded Videos":
+                {
+                    MsgBox("Not implemented yet")
+                    ; Possible in the future.
+                }
+            Default:
+                {
+                    terminateScriptPrompt()
+                }
+        }
+    }
+    Return
+}
+
 changeDownloadFormatPrompt()
 {
     result := MsgBox("Change format?", "Format change ", "OC Icon? T5")
@@ -181,14 +223,6 @@ changeDownloadFormatPrompt()
     If (result = "OK")
     {
         toggleDownloadFormat()
-    }
-    Else If (result = "Cancel")
-    {
-        ; Rework in the future
-    }
-    Else If (result = "Timeout")
-    {
-        ; Rework in the future
     }
     Return
 }
