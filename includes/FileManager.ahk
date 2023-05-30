@@ -130,18 +130,28 @@ readFile(pFileLocation, pBooleanCheckIfURL := false)
 
 ; Checks a given input if it exists on the blacklist.
 ; Returns true if a match was found and false otherwise.
-checkBlackListFile(pItemToCompare)
+; The parameter booleanShowPrompt sets if the user will receive
+; the MsgBox asking about creating a new blacklist file.
+checkBlackListFile(pItemToCompare, pBooleanShowPrompt := true)
 {
     itemToCompare := pItemToCompare
+    booleanShowPrompt := pBooleanShowPrompt
     ; This content will be added to the new created blacklist file.
     ; You can add content to the ignore list by adding it to the .txt file
     ; or directly to the template array.
     templateArray := ["https://www.youtube.com/"]
     If (!FileExist(readConfigFile(4)))
     {
-        result := MsgBox("Could not find blacklist file.`n`nDo you want to create one?", "Warning !", "YN Icon! T10")
-
-        If (result = "Yes")
+        If (booleanShowPrompt = true)
+        {
+            result := MsgBox("Could not find blacklist file.`n`nDo you want to create one?", "Warning !", "YN Icon! T10")
+        }
+        ; Only so that the if condition down under does not throw an error.
+        If (IsSet(result) = false)
+        {
+            result := ""
+        }
+        If (result = "Yes" || booleanShowPrompt = false)
         {
             Try
             {
@@ -150,7 +160,7 @@ checkBlackListFile(pItemToCompare)
                 {
                     FileAppend(templateArray[A_Index] . "`n", readConfigFile(4))
                 }
-                checkBlackListFile(itemToCompare)
+                checkBlackListFile(itemToCompare, booleanShowPrompt)
             }
             Catch
             {

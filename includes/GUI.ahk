@@ -29,13 +29,9 @@ fileSelectionMenuDelete.Add("Downloaded Videos", (*) => deleteFilePrompt("Downlo
 fileSelectionMenuDelete.SetIcon("Downloaded Videos", "shell32.dll", 116)
 
 fileSelectionMenuReset := Menu()
-fileSelectionMenuReset.Add("URL-File", (*) => clearURLFile())
-fileSelectionMenuReset.SetIcon("URL-File", "shell32.dll", 104)
-fileSelectionMenuReset.Add("URL-BackUp-File", (*) => MsgBox("Not implemented"))
-fileSelectionMenuReset.SetIcon("URL-BackUp-File", "shell32.dll", 46)
-fileSelectionMenuReset.Add("URL-Blacklist-File", (*) => MsgBox("Not implemented"))
+fileSelectionMenuReset.Add("URL-Blacklist-File", (*) => openURLBlacklistFile(true))
 fileSelectionMenuReset.SetIcon("URL-Blacklist-File", "shell32.dll", 110)
-fileSelectionMenuReset.Add("Config-File", (*) => createDefaultConfigFile())
+fileSelectionMenuReset.Add("Config-File", (*) => createDefaultConfigFile(, true))
 fileSelectionMenuReset.SetIcon("Config-File", "shell32.dll", 70)
 
 fileMenu := Menu()
@@ -46,9 +42,23 @@ fileMenu.SetIcon("&Delete...", "shell32.dll", 32)
 fileMenu.Add("&Reset...", fileSelectionMenuReset)
 fileMenu.SetIcon("&Reset...", "shell32.dll", 239)
 
+activeHotkeyMenu := Menu()
+; Heavily incomplete !!!
+activeHotkeyMenu.Add("Terminate Script -> " . "add_hotkey_here",
+    (*) => activeHotkeyMenu.ToggleCheck("Terminate Script -> " . "add_hotkey_here"))
+activeHotkeyMenu.Add("Enable All", (*) => activeHotkeyMenu.Check())
+activeHotkeyMenu.SetIcon("Enable All", "shell32.dll", 297)
+activeHotkeyMenu.Add("Disable All", (*) => activeHotkeyMenu.Uncheck())
+activeHotkeyMenu.SetIcon("Disable All", "shell32.dll", 132)
+
 
 optionsMenu := Menu()
-optionsMenu.Add("&Future Option...", (*) => MsgBox("Add future option"))
+optionsMenu.Add("&Active Hotkeys...", activeHotkeyMenu)
+optionsMenu.SetIcon("&Active Hotkeys...", "shell32.dll", 177)
+optionsMenu.Add("Terminate Script", (*) => terminateScriptPrompt())
+optionsMenu.SetIcon("Terminate Script", "shell32.dll", 28)
+optionsMenu.Add("Reload Script", (*) => reloadScriptPrompt())
+optionsMenu.SetIcon("Reload Script", "shell32.dll", 207)
 
 helpMenu := Menu()
 ; Add help doc in the future.
@@ -56,8 +66,11 @@ helpMenu.Add("&Info", (*) => MsgBox("Add help here"))
 
 allMenus := MenuBar()
 allMenus.Add("&File", fileMenu)
+allMenus.SetIcon("&File", "shell32.dll", 4)
 allMenus.Add("&Options", optionsMenu)
-allMenus.Add("&?", helpMenu)
+allMenus.SetIcon("&Options", "shell32.dll", 317)
+allMenus.Add("Info", helpMenu)
+allMenus.SetIcon("Info", "shell32.dll", 24)
 
 myGUI := Gui(, "YouTube Downloader Control Panel")
 myGUI.MenuBar := allMenus

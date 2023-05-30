@@ -120,8 +120,38 @@ openURLBackUpFile()
     Return
 }
 
-openURLBlacklistFile()
+openURLBlacklistFile(pBooleanShowPrompt := false)
 {
+    booleanShowPrompt := pBooleanShowPrompt
+    If (booleanShowPrompt = true)
+    {
+        result := MsgBox("Do you really want to replace the current`n`nblacklist file with a new one ?", "Warning !", "YN Icon! T10")
+        If (result = "Yes")
+        {
+            Try
+            {
+                If (!DirExist(A_WorkingDir . "\files\deleted"))
+                {
+                    DirCreate(A_WorkingDir . "\files\deleted")
+                }
+                SplitPath(readConfigFile(4), &outFileName)
+                FileMove(readConfigFile(4), A_WorkingDir . "\files\deleted\" . outFileName, true)
+                ; Calls checkBlackListFile() in order to create a new blacklist file.
+                checkBlackListFile("generateFile", false)
+                Return
+            }
+            Catch
+            {
+                ; Calls checkBlackListFile() in order to create a new blacklist file.
+                checkBlackListFile("generateFile", false)
+                Return
+            }
+        }
+        Else
+        {
+            Return
+        }
+    }
     Try
     {
         If (WinExist("YT_BLACKLIST.txt - Editor"))
@@ -173,44 +203,68 @@ openConfigFile()
     Return
 }
 
+; Saves a lot of coding by using a switch to determine which MsgBox has to be shown.
 deleteFilePrompt(pFileName)
 {
     fileName := pFileName
     result := MsgBox("Would you like to delete the " . fileName . " ?", "Delete " . fileName, "YN Icon! 8192 T10")
     If (result = "Yes")
     {
-        MsgBox(A_WorkingDir . "\files\deleted")
         If (!DirExist(A_WorkingDir . "\files\deleted"))
         {
-            MsgBox("Mac")
             DirCreate(A_WorkingDir . "\files\deleted")
         }
-        Switch (fileName)
+        Try
         {
-            Case "URL-File":
+            Switch (fileName)
+            {
+                Case "URL-File":
+                    {
+                        c := 2
+                        SplitPath(readConfigFile(2), &outFileName)
+                        FileMove(readConfigFile(2), A_WorkingDir . "\files\deleted\" . outFileName)
+                    }
+                Case "URL-BackUp-File":
+                    {
+                        c := 3
+                        SplitPath(readConfigFile(3), &outFileName)
+                        FileMove(readConfigFile(3), A_WorkingDir . "\files\deleted\" . outFileName)
+                    }
+                Case "URL-Blacklist-File":
+                    {
+                        c := 4
+                        SplitPath(readConfigFile(4), &outFileName)
+                        FileMove(readConfigFile(4), A_WorkingDir . "\files\deleted\" . outFileName)
+                    }
+                Case "Downloaded Videos":
+                    {
+                        c := 5
+                        MsgBox("Not implemented yet")
+                        ; Possible in the future.
+                    }
+                Default:
+                    {
+                        terminateScriptPrompt()
+                    }
+            }
+        }
+        ; In case something goes wrong this will try to resolve the issue.
+        Catch
+        {
+            If (FileExist(A_WorkingDir . "\files\deleted\" . outFileName) && FileExist(A_WorkingDir . "\files\" . outFileName))
+            {
+                result := MsgBox("The " . fileName . " was found in the deleted directory."
+                    "`n`nDo you want to overwrite it ?", "Warning !", "YN Icon! T10")
+                If (result = "Yes")
                 {
-                    SplitPath(readConfigFile(2), &outFileName)
-                    FileMove(readConfigFile(2), A_WorkingDir . "\files\deleted\" . outFileName)
+                    FileDelete(A_WorkingDir . "\files\deleted\" . outFileName)
+                    FileMove(readConfigFile(c), A_WorkingDir . "\files\deleted\" . outFileName)
                 }
-            Case "URL-BackUp-File":
-                {
-                    SplitPath(readConfigFile(3), &outFileName)
-                    FileMove(readConfigFile(3), A_WorkingDir . "\files\deleted\" . outFileName)
-                }
-            Case "URL-Blacklist-File":
-                {
-                    SplitPath(readConfigFile(3), &outFileName)
-                    FileMove(readConfigFile(3), A_WorkingDir . "\files\deleted\" . outFileName)
-                }
-            Case "Downloaded Videos":
-                {
-                    MsgBox("Not implemented yet")
-                    ; Possible in the future.
-                }
-            Default:
-                {
-                    terminateScriptPrompt()
-                }
+            }
+            Else
+            {
+                MsgBox("The " . fileName . " does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
+            }
         }
     }
     Return
