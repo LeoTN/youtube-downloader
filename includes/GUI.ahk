@@ -45,18 +45,16 @@ fileMenu.SetIcon("&Reset...", "shell32.dll", 239)
 activeHotkeyMenu := Menu()
 ; Still incomplete.
 activeHotkeyMenu.Add("Terminate Script -> " . "add_hotkey_here",
-    (*) => activeHotkeyMenu.ToggleCheck("Terminate Script -> " . "add_hotkey_here"), "+Radio")
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Terminate Script -> " . "add_hotkey_here", 1 ), "+Radio")
 activeHotkeyMenu.Add("Reload Script -> " . "add_hotkey_here",
-    (*) => activeHotkeyMenu.ToggleCheck("Reload Script -> " . "add_hotkey_here"), "+Radio")
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Reload Script -> " . "add_hotkey_here", 2 ), "+Radio")
 activeHotkeyMenu.Add("Clear URL File -> " . "add_hotkey_here",
-    (*) => activeHotkeyMenu.ToggleCheck("Clear URL File -> " . "add_hotkey_here"), "+Radio")
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Clear URL File -> " . "add_hotkey_here", 3 ), "+Radio")
 activeHotkeyMenu.Add()
 activeHotkeyMenu.Add("Enable All", (*) => GUI_MenuCheckAll("activeHotkeyMenu"))
 activeHotkeyMenu.SetIcon("Enable All", "shell32.dll", 297)
 activeHotkeyMenu.Add("Disable All", (*) => GUI_MenuUncheckAll("activeHotkeyMenu"))
 activeHotkeyMenu.SetIcon("Disable All", "shell32.dll", 132)
-activeHotkeyMenu.Add("Test", (*) => test())
-
 
 optionsMenu := Menu()
 optionsMenu.Add("&Active Hotkeys...", activeHotkeyMenu)
@@ -87,6 +85,20 @@ GUI SUPPORT FUNCTIONS
 -------------------------------------------------
 */
 
+; Necessary in place for the normal way of toggeling the checkmark.
+; This function also flips the checkMarkArrays values to keep track of the checkmarks.
+GUI_ToggleCheck(pMenuName, pMenuItemName, pMenuItemPosition)
+{
+    menuName := pMenuName
+    menuItemName := pMenuItemName
+    menuItemPosition := pMenuItemPosition
+
+    ; Executes the command so that the checkmark becomes visible for the user.
+    %menuName%.ToggleCheck(menuItemName)
+    ; Registers the change in the matching array.
+    GUI_MenuCheckHandler(menuName, menuItemPosition, "toggle")
+}
+
 GUI_MenuCheckAll(pMenuName)
 {
     menuName := pMenuName
@@ -94,6 +106,11 @@ GUI_MenuCheckAll(pMenuName)
     Loop (MenuItemCount - 2)
     {
         %menuName%.Check(A_Index . "&")
+        ; Protects the code from the invalid index error caused by the check array further on.
+        Try
+        {
+            GUI_MenuCheckHandler(menuName, A_Index, true)
+        }
     }
     Return
 }
@@ -105,12 +122,50 @@ GUI_MenuUncheckAll(pMenuName)
     Loop (MenuItemCount - 2)
     {
         %menuName%.Uncheck(A_Index . "&")
+        ; Protects the code from the invalid index error caused by the check array further on.
+        Try
+        {
+            GUI_MenuCheckHandler(menuName, A_Index, false)
+        }
     }
     Return
 }
 
-test()
+; This function stores all menu items check states. In other words
+; if there is a checkmark next to an option.
+; The parameter menuName defines which menu's submenus will be changed.
+; Enter "toggle" as pBooleanState in order to toggle a menu option's boolean value.
+GUI_MenuCheckHandler(pMenuName, pSubMenuPosition, pBooleanState := unset)
 {
-    isChecked := DllCall("GetMenuItemInfoA", "ptr", activeHotkeyMenu.Handle, "6&")
-    MsgBox(isChecked)
+    menuName := pMenuName
+    subMenuPosition := pSubMenuPosition
+    If (IsSet(pBooleanState) = true)
+    {
+        booleanState := pBooleanState
+    }
+
+    static menuCheckArray_activeHotKeyMenu := [0, 0, 0]
+    If (menuName = "activeHotkeyMenu")
+    {
+        If (IsSet(booleanState) = true && booleanState = "toggle")
+        {
+            ; Toggles the boolean value at a specific position.
+            menuCheckArray_activeHotKeyMenu[subMenuPosition] := !menuCheckArray_activeHotKeyMenu[subMenuPosition]
+        }
+        ; Only if there is a state given to apply to a menu.
+        Else If (IsSet(booleanState) && (booleanState = true || booleanState = false))
+        {
+            menuCheckArray_activeHotKeyMenu[subMenuPosition] := booleanState
+        }
+        Else
+        {
+            Return menuCheckArray_activeHotKeyMenu[subMenuPosition]
+        }
+    }
+    Return
+}
+
+#z::
+{
+    MsgBox(GUI_MenuCheckHandler("activeHotkeyMenu", 3))
 }
