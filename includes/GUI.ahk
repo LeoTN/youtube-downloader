@@ -43,18 +43,25 @@ fileMenu.Add("&Reset...", fileSelectionMenuReset)
 fileMenu.SetIcon("&Reset...", "shell32.dll", 239)
 
 activeHotkeyMenu := Menu()
-; Heavily incomplete !!!
+; Still incomplete.
 activeHotkeyMenu.Add("Terminate Script -> " . "add_hotkey_here",
-    (*) => activeHotkeyMenu.ToggleCheck("Terminate Script -> " . "add_hotkey_here"))
-activeHotkeyMenu.Add("Enable All", (*) => activeHotkeyMenu.Check())
+    (*) => activeHotkeyMenu.ToggleCheck("Terminate Script -> " . "add_hotkey_here"), "+Radio")
+activeHotkeyMenu.Add("Reload Script -> " . "add_hotkey_here",
+    (*) => activeHotkeyMenu.ToggleCheck("Reload Script -> " . "add_hotkey_here"), "+Radio")
+activeHotkeyMenu.Add("Clear URL File -> " . "add_hotkey_here",
+    (*) => activeHotkeyMenu.ToggleCheck("Clear URL File -> " . "add_hotkey_here"), "+Radio")
+activeHotkeyMenu.Add()
+activeHotkeyMenu.Add("Enable All", (*) => GUI_MenuCheckAll("activeHotkeyMenu"))
 activeHotkeyMenu.SetIcon("Enable All", "shell32.dll", 297)
-activeHotkeyMenu.Add("Disable All", (*) => activeHotkeyMenu.Uncheck())
+activeHotkeyMenu.Add("Disable All", (*) => GUI_MenuUncheckAll("activeHotkeyMenu"))
 activeHotkeyMenu.SetIcon("Disable All", "shell32.dll", 132)
+activeHotkeyMenu.Add("Test", (*) => test())
 
 
 optionsMenu := Menu()
 optionsMenu.Add("&Active Hotkeys...", activeHotkeyMenu)
 optionsMenu.SetIcon("&Active Hotkeys...", "shell32.dll", 177)
+optionsMenu.Add()
 optionsMenu.Add("Terminate Script", (*) => terminateScriptPrompt())
 optionsMenu.SetIcon("Terminate Script", "shell32.dll", 28)
 optionsMenu.Add("Reload Script", (*) => reloadScriptPrompt())
@@ -74,3 +81,36 @@ allMenus.SetIcon("Info", "shell32.dll", 24)
 
 myGUI := Gui(, "YouTube Downloader Control Panel")
 myGUI.MenuBar := allMenus
+
+/*
+GUI SUPPORT FUNCTIONS
+-------------------------------------------------
+*/
+
+GUI_MenuCheckAll(pMenuName)
+{
+    menuName := pMenuName
+    menuItemCount := DllCall("GetMenuItemCount", "ptr", %menuName%.Handle)
+    Loop (MenuItemCount - 2)
+    {
+        %menuName%.Check(A_Index . "&")
+    }
+    Return
+}
+
+GUI_MenuUncheckAll(pMenuName)
+{
+    menuName := pMenuName
+    menuItemCount := DllCall("GetMenuItemCount", "ptr", %menuName%.Handle)
+    Loop (MenuItemCount - 2)
+    {
+        %menuName%.Uncheck(A_Index . "&")
+    }
+    Return
+}
+
+test()
+{
+    isChecked := DllCall("GetMenuItemInfoA", "ptr", activeHotkeyMenu.Handle, "6&")
+    MsgBox(isChecked)
+}
