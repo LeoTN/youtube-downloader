@@ -2,7 +2,6 @@
 SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
-#Warn All, Off ;REMOVE !
 
 ; WARNING ! GUI IN TEST PHASE
 #Include "ConfigFileManager.ahk"
@@ -45,11 +44,11 @@ fileMenu.SetIcon("&Reset...", "shell32.dll", 239)
 activeHotkeyMenu := Menu()
 ; Still incomplete.
 activeHotkeyMenu.Add("Terminate Script -> " . "add_hotkey_here",
-    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Terminate Script -> " . "add_hotkey_here", 1 ), "+Radio")
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Terminate Script -> " . "add_hotkey_here", 1), "+Radio")
 activeHotkeyMenu.Add("Reload Script -> " . "add_hotkey_here",
-    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Reload Script -> " . "add_hotkey_here", 2 ), "+Radio")
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Reload Script -> " . "add_hotkey_here", 2), "+Radio")
 activeHotkeyMenu.Add("Clear URL File -> " . "add_hotkey_here",
-    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Clear URL File -> " . "add_hotkey_here", 3 ), "+Radio")
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Clear URL File -> " . "add_hotkey_here", 3), "+Radio")
 activeHotkeyMenu.Add()
 activeHotkeyMenu.Add("Enable All", (*) => GUI_MenuCheckAll("activeHotkeyMenu"))
 activeHotkeyMenu.SetIcon("Enable All", "shell32.dll", 297)
@@ -134,7 +133,8 @@ GUI_MenuUncheckAll(pMenuName)
 ; This function stores all menu items check states. In other words
 ; if there is a checkmark next to an option.
 ; The parameter menuName defines which menu's submenus will be changed.
-; Enter "toggle" as pBooleanState in order to toggle a menu option's boolean value.
+; Enter "toggle" as pBooleanState to toggle a menu option's boolean value.
+; Leave booleanState ommited to receive the current value of a submenu item.
 GUI_MenuCheckHandler(pMenuName, pSubMenuPosition, pBooleanState := unset)
 {
     menuName := pMenuName
@@ -163,9 +163,4 @@ GUI_MenuCheckHandler(pMenuName, pSubMenuPosition, pBooleanState := unset)
         }
     }
     Return
-}
-
-#z::
-{
-    MsgBox(GUI_MenuCheckHandler("activeHotkeyMenu", 3))
 }
