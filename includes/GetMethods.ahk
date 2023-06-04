@@ -26,7 +26,8 @@ getPixelColorMouse(pMouseX := unset, pMouseY := unset, pColor := unset, pVariati
         color := pColor
         variation := pVariation
         Sleep(50)
-        If (PixelSearch(&OutputX, &OutputY, MouseX, MouseY, MouseX, MouseX, color, variation) = true) ; Makes finding a color more easy by accepting multiple variations.
+        ; Makes finding a color more easy by accepting multiple variations.
+        If (PixelSearch(&OutputX, &OutputY, MouseX, MouseY, MouseX, MouseX, color, variation) = true)
         {
             Return true
         }

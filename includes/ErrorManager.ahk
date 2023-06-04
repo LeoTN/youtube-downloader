@@ -87,9 +87,8 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
             startDownload(getCurrentURL(false))
             If (maxAttempts > 0)
             {
-                ; This ensures that the function does not run infinetly
-                ; The script tries the download several times and skips it after the maxAttempts number is reached ; The script tries the download several times and skips it after the maxAttempts number is reached
-                Return handleErrors("Error_Red", maxAttempts - 1)
+                ; This ensures that the function does not run infinetly.
+                ; The script tries the download several times and skips it after the maxAttempts number is reached.
             }
             Else
             {
@@ -113,17 +112,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
             }
             Return true
         }
-        Else If (result = "Cancel")
-        {
-            finished := unset
-            finished := handleErrors_skipURL()
-            while (IsSet(finished) = false)
-            {
-                Sleep(500)
-            }
-            Return true
-        }
-        Else If (result = "Timeout")
+        Else If (result = "Cancel" || "Timeout")
         {
             finished := unset
             finished := handleErrors_skipURL()

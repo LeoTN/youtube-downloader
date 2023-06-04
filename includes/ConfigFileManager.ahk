@@ -79,9 +79,21 @@ CONFIG FILE SECTION
 Creates, reads and manages the script's config file.
 */
 
-createDefaultConfigFile(pBooleanCreateBackUp := true)
+; Creates a default config file with the standard parameters. Usually always creates
+; a backup file to recover changes if needed.
+createDefaultConfigFile(pBooleanCreateBackUp := true, pBooleanShowPrompt := false)
 {
     booleanCreateBackUp := pBooleanCreateBackUp
+    booleanShowPrompt := pBooleanShowPrompt
+
+    If (booleanShowPrompt = true)
+    {
+        result := MsgBox("Do you really want to replace the current`n`nconfig file with a new one ?", "Warning !", "YN Icon! T10")
+        If (result = "No" || result = "Timeout")
+        {
+            Return
+        }
+    }
     If (booleanCreateBackUp = true)
     {
         If (FileExist(configFileLocation))
@@ -145,12 +157,7 @@ readConfigFile(pVariableNameArrayIndex := 0)
                 readConfigFile(variableNameArrayIndex)
                 Return
             }
-            Else If (result = "No")
-            {
-                MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
-                ExitApp()
-            }
-            Else If (result = "Timeout")
+            Else If (result = "No" || "Timeout")
             {
                 MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
                 ExitApp()
@@ -212,18 +219,13 @@ readConfigFile(pVariableNameArrayIndex := 0)
                         ExitApp()
                     }
                 }
-                Else If (result = "No")
+                Else If (result = "No" || "Timeout")
                 {
                     MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
                     ExitApp()
                     ExitApp()
                 }
-                Else If (result = "Timeout")
-                {
-                    MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
-                    ExitApp()
-                    ExitApp()
-                }
+                ExitApp()
             }
         }
     }

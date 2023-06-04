@@ -45,7 +45,7 @@ saveVideoURLDirectlyToFile()
     A_Clipboard := ""
     MouseClick("Right")
     ; Do not decrease values ! May lead to unstable performance.
-    Sleep(65)
+    Sleep(100)
     ; Probably only works with German Firefox version.
     ; Will be language specific in the future.
     Send("k")
@@ -130,18 +130,28 @@ readFile(pFileLocation, pBooleanCheckIfURL := false)
 
 ; Checks a given input if it exists on the blacklist.
 ; Returns true if a match was found and false otherwise.
-checkBlackListFile(pItemToCompare)
+; The parameter booleanShowPrompt sets if the user will receive
+; the MsgBox asking about creating a new blacklist file.
+checkBlackListFile(pItemToCompare, pBooleanShowPrompt := true)
 {
     itemToCompare := pItemToCompare
+    booleanShowPrompt := pBooleanShowPrompt
     ; This content will be added to the new created blacklist file.
     ; You can add content to the ignore list by adding it to the .txt file
     ; or directly to the template array.
     templateArray := ["https://www.youtube.com/"]
     If (!FileExist(readConfigFile(4)))
     {
-        result := MsgBox("Could not find blacklist file.`n`nDo you want to create one?", "Warning !", "YN Icon! T10")
-
-        If (result = "Yes")
+        If (booleanShowPrompt = true)
+        {
+            result := MsgBox("Could not find blacklist file.`n`nDo you want to create one?", "Warning !", "YN Icon! T10")
+        }
+        ; Only so that the if condition down under does not throw an error.
+        If (IsSet(result) = false)
+        {
+            result := ""
+        }
+        If (result = "Yes" || booleanShowPrompt = false)
         {
             Try
             {
@@ -150,22 +160,17 @@ checkBlackListFile(pItemToCompare)
                 {
                     FileAppend(templateArray[A_Index] . "`n", readConfigFile(4))
                 }
-                checkBlackListFile(itemToCompare)
+                checkBlackListFile(itemToCompare, booleanShowPrompt)
             }
             Catch
             {
                 MsgBox("Could not create file !	`n`nCheck the config file for a valid path.", "Error", "O Icon! T3")
                 Reload()
             }
-
         }
-        Else If (result = "No")
+        Else If (result = "No" || "Timeout")
         {
-            Return ; REWORK?
-        }
-        Else If (result = "Timeout")
-        {
-            Return ; REWORK?
+            Return
         }
     }
     ; In case something has changed in the blacklist file.
@@ -229,11 +234,7 @@ manageURLFile()
         }
 
     }
-    Else If (result = "No")
-    {
-        Reload()
-    }
-    Else If (result = "Timeout")
+    Else If (result = "No" || "Timeout")
     {
         Reload()
     }

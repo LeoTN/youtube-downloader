@@ -81,7 +81,7 @@ startDownload(pURL)
                             Sleep(3000)
                             result := MsgBox("Would you like to close the browser instance now?", "Download completed !", "36 T5")
 
-                            If (result = "Yes")
+                            If (result = "Yes" || "Timeout")
                             {
                                 WinClose(firefoxWindow)
                                 manageURLFile()
@@ -90,12 +90,6 @@ startDownload(pURL)
                             Else If (result = "No")
                             {
                                 findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
-                                manageURLFile()
-                                Reload()
-                            }
-                            Else If (result = "Timeout")
-                            {
-                                WinClose(firefoxWindow)
                                 manageURLFile()
                                 Reload()
                             }
