@@ -44,17 +44,20 @@ createMainGUI()
 
     activeHotkeyMenu := Menu()
     ; Still incomplete.
-    activeHotkeyMenu.Add("Terminate Script -> " . expandHotkey(readConfigFile("TERMINATE_SCRIPT_HK")),
-        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Terminate Script -> " .
+    activeHotkeyMenu.Add("Terminate Script" . " -> " . expandHotkey(readConfigFile("TERMINATE_SCRIPT_HK")),
+        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Terminate Script" . " -> " .
             expandHotkey(readConfigFile("TERMINATE_SCRIPT_HK")), 1), "+Radio")
-    activeHotkeyMenu.Add("Reload Script -> " . expandHotkey(readConfigFile("RELOAD_SCRIPT_HK")),
-        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Reload Script -> " .
+
+    activeHotkeyMenu.Add("Reload Script" . " -> " . expandHotkey(readConfigFile("RELOAD_SCRIPT_HK")),
+        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Reload Script" . " -> " .
             expandHotkey(readConfigFile("RELOAD_SCRIPT_HK")), 2), "+Radio")
-    activeHotkeyMenu.Add("Pause / Continue Script -> " . expandHotkey(readConfigFile("PAUSE_CONTINUE_SCRIPT_HK")),
-        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Pause / Continue Script -> " .
+
+    activeHotkeyMenu.Add("Pause / Continue Script" . " -> " . expandHotkey(readConfigFile("PAUSE_CONTINUE_SCRIPT_HK")),
+        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Pause / Continue Script" . " -> " .
             expandHotkey(readConfigFile("PAUSE_CONTINUE_SCRIPT_HK")), 3), "+Radio")
-    activeHotkeyMenu.Add("Clear URL File -> " . expandHotkey(readConfigFile("CLEAR_URL_FILE_HK")),
-        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Clear URL File -> " .
+
+    activeHotkeyMenu.Add("Clear URL File" . " -> " . expandHotkey(readConfigFile("CLEAR_URL_FILE_HK")),
+        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Clear URL File" . " -> " .
             expandHotkey(readConfigFile("CLEAR_URL_FILE_HK")), 4), "+Radio")
 
     activeHotkeyMenu.Add()
@@ -75,18 +78,18 @@ createMainGUI()
     optionsMenu.SetIcon("Reload Script", "shell32.dll", 207)
 
     helpMenu := Menu()
-    ; Add help doc in the future.
-    helpMenu.Add("&Info", (*) => MsgBox("Add help here"))
+    helpMenu.Add("GitHub", (*) => Run("https://github.com/LeoTN/youtube-downloader-using-ahk#readme"))
 
     allMenus := MenuBar()
     allMenus.Add("&File", fileMenu)
     allMenus.SetIcon("&File", "shell32.dll", 4)
     allMenus.Add("&Options", optionsMenu)
     allMenus.SetIcon("&Options", "shell32.dll", 317)
-    allMenus.Add("Info", helpMenu)
-    allMenus.SetIcon("Info", "shell32.dll", 24)
+    allMenus.Add("&Info", helpMenu)
+    allMenus.SetIcon("&Info", "shell32.dll", 24)
 
     mainGUI := Gui(, "YouTube Downloader Control Panel")
+    mainGUI.Add("Picture", "w320 h-1 x-10 y-10", youTubeBackGroundLocation)
     mainGUI.MenuBar := allMenus
 }
 
@@ -98,6 +101,8 @@ GUI SUPPORT FUNCTIONS
 ; Runs a few commands when the script is executed.
 GUI_onInit()
 {
+    global youTubeBackGroundLocation := A_WorkingDir . "\files\YouTubeBackground.jpg"
+    FileInstall("files\YouTubeBackground.jpg", youTubeBackGroundLocation, 1)
     createMainGUI()
     GUI_ApplyCheckmarksFromConfigFile("activeHotkeyMenu")
 }

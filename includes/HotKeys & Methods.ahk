@@ -2,6 +2,7 @@
 SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
+Hotkey_onInit()
 
 /*
 DEBUG SECTION
@@ -24,20 +25,49 @@ Hotkey to disable/enable debug mode.
     Return
 }
 
-; Beginning of all standard script hotkeys.
+Hotkey_onInit()
+{
+    Try
+    {
+        registerHotkeys()
+    }
+    Catch
+    {
+        registerHotkeys()
+    }
+}
 
-; Main hotkey (start download).
-Hotkey(readConfigFile("DOWNLOAD_HK"), (*) => userStartDownload())
+registerHotkeys()
+{
+    ; Beginning of all standard script hotkeys.
 
-; Second hotkey (collect URLs).
-Hotkey(readConfigFile("URL_COLLECT_HK"), (*) => saveSearchBarContentsToFile())
+    ; Main hotkey (start download).
+    Hotkey(readConfigFile("DOWNLOAD_HK"), (*) => userStartDownload())
 
-; Third hotkey (collect URLs from video thumbnail).
-Hotkey(readConfigFile("THUMBNAIL_URL_COLLECT_HK"), (*) => saveVideoURLDirectlyToFile())
+    ; Second hotkey (collect URLs).
+    Hotkey(readConfigFile("URL_COLLECT_HK"), (*) => saveSearchBarContentsToFile())
 
-; GUI hotkey (opens GUI).
-Hotkey(readConfigFile("GUI_HK"), (*) => Hotkey_openGUI())
-; Hotkey support function to open the script GUI.
+    ; Third hotkey (collect URLs from video thumbnail).
+    Hotkey(readConfigFile("THUMBNAIL_URL_COLLECT_HK"), (*) => saveVideoURLDirectlyToFile())
+
+    ; GUI hotkey (opens GUI).
+    Hotkey(readConfigFile("GUI_HK"), (*) => Hotkey_openGUI())
+    ; Hotkey support function to open the script GUI.
+
+    ; Hotkey to termniate the script.
+    Hotkey(readConfigFile("TERMINATE_SCRIPT_HK"), (*) => terminateScriptPrompt(), "Off")
+
+    ; Hotkey to reload the script.
+    Hotkey(readConfigFile("RELOAD_SCRIPT_HK"), (*) => reloadScriptPrompt(), "Off")
+
+    ; Hotkey to pause / continue the execution of the script.
+    Hotkey(readConfigFile("PAUSE_CONTINUE_SCRIPT_HK"), (*) => MsgBox("Not implemented yet"), "Off")
+
+    ; Hotkey for clearing the URL file.
+    Hotkey(readConfigFile("CLEAR_URL_FILE_HK"), (*) => clearURLFile(), "Off")
+}
+
+
 Hotkey_openGUI()
 {
     static flipflop := true
@@ -54,18 +84,6 @@ Hotkey_openGUI()
     }
     Return
 }
-
-; Hotkey to termniate the script.
-Hotkey(readConfigFile("TERMINATE_SCRIPT_HK"), (*) => terminateScriptPrompt(), "Off")
-
-; Hotkey to reload the script.
-Hotkey(readConfigFile("RELOAD_SCRIPT_HK"), (*) => reloadScriptPrompt(), "Off")
-
-; Hotkey to pause / continue the execution of the script.
-Hotkey(readConfigFile("PAUSE_CONTINUE_SCRIPT_HK"), (*) => MsgBox("Not implemented yet"), "Off")
-
-; Hotkey for clearing the URL file.
-Hotkey(readConfigFile("CLEAR_URL_FILE_HK"), (*) => clearURLFile(), "Off")
 
 /*
 FUNCTION SECTION

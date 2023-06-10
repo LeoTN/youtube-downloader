@@ -23,6 +23,7 @@ onInit()
 {
     ; Only called to check the config file status.
     readConfigFile("booleanDebugMode")
+    checkBlackListFile("createBlackListFile")
 }
 
 ; NOTE : This script currently only works with firefox as your default browser!
@@ -39,7 +40,6 @@ F6::
     If (readConfigFile("booleanDebugMode") = true)
     {
         ; Enter code below.
-        GUI_MenuCheckHandler("activeHotkeyMenu")
     }
     Return
 }
@@ -49,8 +49,6 @@ F7::
     If (readConfigFile("booleanDebugMode") = true)
     {
         ; Enter code below
-        test := Array("[1,2,3]")
-        MsgBox(test[1])
     }
     Return
 }
