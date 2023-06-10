@@ -12,7 +12,7 @@ DEBUG SECTION
 Add debug variables here.
 */
 ; This variable is also written into the config file.
-booleanDebugMode := false
+global booleanDebugMode := false
 
 ;------------------------------------------------
 
@@ -32,7 +32,24 @@ URL_FILE_LOCATION := A_ScriptDir . "\files\YT_URLS.txt"
 URL_BACKUP_FILE_LOCATION := A_ScriptDir . "\files\YT_URLS_BACKUP.txt"
 ; Specifies path for the .txt file which stores the blacklist file.
 BLACKLIST_FILE_LOCATION := A_ScriptDir . "\files\YT_BLACKLIST.txt"
-
+; Is a number in milliseconds to determine the standard wait time.
+; The standard wait time can be increased if you are on a slow system
+; or decreased when your computer is a quantum computer.
+; NOTE : Changing this value at your own risk ! May lead to errors.
+WAIT_TIME := 500
+; Sets the default download format for your collected URLs.
+DOWNLOAD_FORMAT := "MP4"
+; Stores which hotkeys are enabled / disabled via the GUI.
+HOTKEY_STATE_ARRAY := "[0, 0, 0, 0]"
+; Just a list of all standard hotkeys.
+DOWNLOAD_HK := "+^!D"
+URL_COLLECT_HK := "+^!S"
+THUMBNAIL_URL_COLLECT_HK := "+^!F"
+GUI_HK := "+^!G"
+TERMINATE_SCRIPT_HK := "+^!T"
+RELOAD_SCRIPT_HK := "+^!R"
+PAUSE_CONTINUE_SCRIPT_HK := "+^!P"
+CLEAR_URL_FILE_HK := "!F1"
 ;------------------------------------------------
 
 ; Will contain all config values matching with each variable name in the array below.
@@ -50,7 +67,18 @@ configVariableNameArray := [
     "booleanDebugMode",
     "URL_FILE_LOCATION",
     "URL_BACKUP_FILE_LOCATION",
-    "BLACKLIST_FILE_LOCATION"
+    "BLACKLIST_FILE_LOCATION",
+    "WAIT_TIME", ; 5
+    "DOWNLOAD_FORMAT",
+    "HOTKEY_STATE_ARRAY",
+    "DOWNLOAD_HK",
+    "URL_COLLECT_HK",
+    "THUMBNAIL_URL_COLLECT_HK", ; 10
+    "GUI_HK",
+    "TERMINATE_SCRIPT_HK",
+    "RELOAD_SCRIPT_HK",
+    "PAUSE_CONTINUE_SCRIPT_HK",
+    "CLEAR_URL_FILE_HK" ; 15
 ]
 ; Create an array including the matching section name for EACH item in the configVariableNameArray.
 ; This makes it easier to read and write the config file.
@@ -59,7 +87,18 @@ configSectionNameArray := [
     "DebugSettings",
     "FileLocations",
     "FileLocations",
-    "FileLocations"
+    "FileLocations",
+    "Options", ; 5
+    "Options",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys", ; 10
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys" ; 15
 ]
 
 /*
@@ -68,9 +107,21 @@ CONFIG FILE SECTION
 Creates, reads and manages the script's config file.
 */
 
-createDefaultConfigFile(pBooleanCreateBackUp := true)
+; Creates a default config file with the standard parameters. Usually always creates
+; a backup file to recover changes if needed.
+createDefaultConfigFile(pBooleanCreateBackUp := true, pBooleanShowPrompt := false)
 {
     booleanCreateBackUp := pBooleanCreateBackUp
+    booleanShowPrompt := pBooleanShowPrompt
+
+    If (booleanShowPrompt = true)
+    {
+        result := MsgBox("Do you really want to replace the current`n`nconfig file with a new one ?", "Warning !", "YN Icon! T10")
+        If (result = "No" || result = "Timeout")
+        {
+            Return
+        }
+    }
     If (booleanCreateBackUp = true)
     {
         If (FileExist(configFileLocation))
@@ -86,7 +137,8 @@ createDefaultConfigFile(pBooleanCreateBackUp := true)
     ; In case you forget to specify a section for EACH new config file entry this will remind you to do so :D
     If (configVariableNameArray.Length != configSectionNameArray.Length)
     {
-        MsgBox("Not every config file entry has been asigned to a section !`n`nPlease fix this by checking both arrays.", "Error", "O IconX")
+        MsgBox("Not every config file entry has been asigned to a section !`n`nPlease fix this by checking both arrays.",
+            "Error", "O IconX")
         MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
         ExitApp()
     }
@@ -98,7 +150,8 @@ createDefaultConfigFile(pBooleanCreateBackUp := true)
         */
         Loop configVariableNameArray.Length
         {
-            IniWrite(%configVariableNameArray[A_Index]%, configFileLocation, configSectionNameArray[A_Index], configVariableNameArray[A_Index])
+            IniWrite(%configVariableNameArray[A_Index]%, configFileLocation, configSectionNameArray[A_Index],
+            configVariableNameArray[A_Index])
         }
         MsgBox("A default config file has been generated.", "Information", "O Iconi T3")
     }
@@ -106,17 +159,16 @@ createDefaultConfigFile(pBooleanCreateBackUp := true)
 }
 
 ; Reads the config file and extracts it's values.
-; The parameter variableNameArrayIndex specifies a specific
+; The parameter optionName specifies a specific
 ; variable's content which you want to return.
-; For example (2) to return URL_FILE_LOCATION's content
+; For example '"URL_FILE_LOCATION"' to return URL_FILE_LOCATION's content
 ; which is 'A_ScriptDir . "\files\YT_URLS.txt"' by default.
-; Leave this parameter ommited to receive the complete array.
-; Returns an array with the content of the config file.
-readConfigFile(pVariableNameArrayIndex := 0)
+; Returns the value out of the config file.
+readConfigFile(pOptionName)
 {
-    variableNameArrayIndex := pVariableNameArrayIndex
-    ; Writes the settings into the configFileArray.
-    Loop configVariableNameArray.Length
+    optionName := pOptionName
+
+    Loop (configVariableNameArray.Length)
     {
         Try
         {
@@ -126,129 +178,112 @@ readConfigFile(pVariableNameArrayIndex := 0)
         }
         Catch
         {
-            result := MsgBox("The script's config file seems to be corrupted or unavailable !`n`nDo you want to create a new one using the template ?"
+            result := MsgBox("The script's config file seems to be corrupted or unavailable !"
+                "`n`nDo you want to create a new one using the template ?"
                 , "Error", "YN IconX 8192 T10")
             If (result = "Yes")
             {
                 createDefaultConfigFile()
-                readConfigFile(variableNameArrayIndex)
+                readConfigFile(optionName)
                 Return
             }
-            Else If (result = "No")
-            {
-                MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
-                ExitApp()
-            }
-            Else If (result = "Timeout")
+            Else If (result = "No" || "Timeout")
             {
                 MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
                 ExitApp()
             }
         }
     }
-    If (variableNameArrayIndex = 0)
+    Loop (configVariableNameArray.Length)
     {
-        Return configFileContentArray
-    }
-    Else
-    {
-        ; The following code only applies for path values.
-        ; Everything else should be excluded.
-        If (InStr(configFileContentArray[variableNameArrayIndex], "\"))
+        ; Searches in the config file for the given option name to then extract the value.
+        If (InStr(configVariableNameArray[A_Index], optionName, 0))
         {
-            ; If necessary the directory read in the config file will be created.
-            ; SplitPath makes sure the last part of the whole path is removed.
-            ; For example it removes the "\YT_URLS.txt"
-            SplitPath(configFileContentArray[variableNameArrayIndex], , &outDir)
-            ; Looks for one of the specified characters to identify invalid path names.
-            ; Searches for common mistakes in the path name.
-            specialChars := '<>"/|?*'
-            Loop Parse, specialChars
+            ; The following code only applies for path values.
+            ; Everything else should be excluded.
+            If (InStr(configFileContentArray[A_Index], "\"))
             {
-                If (InStr(outDir, A_LoopField))
+                ; If necessary the directory read in the config file will be created.
+                ; SplitPath makes sure the last part of the whole path is removed.
+                ; For example it removes the "\YT_URLS.txt"
+                SplitPath(configFileContentArray[A_Index], , &outDir)
+                ; Looks for one of the specified characters to identify invalid path names.
+                ; Searches for common mistakes in the path name.
+                specialChars := '<>"/|?*'
+                Loop Parse, specialChars
                 {
-                    MsgBox("Could not create directory !`nCheck the config file for a valid path at : `n " . configVariableNameArray[variableNameArrayIndex], "Error", "O Icon! T10")
-                    MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
-                    ExitApp()
-                }
-                If (InStr(outDir, "\\"))
-                {
-                    MsgBox("Could not create directory !`nCheck the config file for a valid path at : `n " . configVariableNameArray[variableNameArrayIndex], "Error", "O Icon! T10")
-                    MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
-                    ExitApp()
-                }
-                If (InStr(outDir, "\\\"))
-                {
-                    MsgBox("Could not create directory !`nCheck the config file for a valid path at : `n " . configVariableNameArray[variableNameArrayIndex], "Error", "O Icon! T10")
-                    MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
-                    ExitApp()
-                }
-            }
-            If (!DirExist(outDir))
-            {
-                result := MsgBox("The directory :`n" . configFileContentArray[variableNameArrayIndex] . "`ndoes not exist. `nWould you like to create it ?", "Warning !", "YN Icon! T10")
-                If (result = "Yes")
-                {
-                    Try
+                    If (InStr(outDir, A_LoopField) || InStr(outDir, "\\") || InStr(outDir, "\\\"))
                     {
-                        DirCreate(outDir)
-                        Return configFileContentArray[variableNameArrayIndex]
-                    }
-                    Catch
-                    {
-                        MsgBox("Could not create directory !`nCheck the config file for an valid path at : `n " . configVariableNameArray[variableNameArrayIndex], "Error", "O Icon! T3")
+                        MsgBox("Could not create directory !`nCheck the config file for a valid path at : `n "
+                            . configVariableNameArray[A_Index], "Error", "O Icon! T10")
                         MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
                         ExitApp()
                     }
                 }
-                Else If (result = "No")
+                If (!DirExist(outDir))
                 {
-                    MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
-                    ExitApp()
-                    ExitApp()
-                }
-                Else If (result = "Timeout")
-                {
-                    MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
-                    ExitApp()
+                    result := MsgBox("The directory :`n" . configFileContentArray[A_Index]
+                    . "`ndoes not exist. `nWould you like to create it ?", "Warning !", "YN Icon! T10")
+                    If (result = "Yes")
+                    {
+                        Try
+                        {
+                            DirCreate(outDir)
+                            Return configFileContentArray[A_Index]
+                        }
+                        Catch
+                        {
+                            MsgBox("Could not create directory !`nCheck the config file for a valid path at : `n "
+                                . configVariableNameArray[A_Index], "Error", "O Icon! T10")
+                            MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
+                            ExitApp()
+                        }
+                    }
+                    Else If (result = "No" || "Timeout")
+                    {
+                        MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
+                        ExitApp()
+                    }
                     ExitApp()
                 }
             }
+            Return configFileContentArray[A_Index]
         }
     }
-    Return configFileContentArray[variableNameArrayIndex]
+    MsgBox("Could not find " . optionName . "in the config file.", "Script status", "O IconX T3")
+    ExitApp()
 }
 
-; The parameter variableNameArrayIndex specifies a specific
+; The parameter optionName specifies a specific
 ; variable's content which you want to edit.
 ; The parameter data holds the new data for the config file.
-editConfigFile(pVariableNameArrayIndex, pData)
+editConfigFile(pOptionName, pData)
 {
-    variableNameArrayIndex := pVariableNameArrayIndex
+    optionName := pOptionName
     data := pData
-    ; Basically the same as creating the config file but not with a loop.
-    IniWrite(data, configFileLocation
-        , configSectionNameArray[variableNameArrayIndex]
-        , configVariableNameArray[variableNameArrayIndex])
+    ; Basically the same as creating the config file.
+    Loop (configVariableNameArray.Length)
+    {
+        ; Searches in the config file for the given option name to then change the value.
+        If (InStr(configVariableNameArray[A_Index], optionName, 0))
+        {
+            ; Check just in case the given data is an array.
+            If (data.Has(1) = true)
+            {
+                dataString := arrayToString(data)
+                IniWrite(dataString, configFileLocation
+                    , configSectionNameArray[A_Index]
+                    , configVariableNameArray[A_Index])
+                Return
+            }
+            Else
+            {
+                IniWrite(data, configFileLocation
+                    , configSectionNameArray[A_Index]
+                    , configVariableNameArray[A_Index])
+                Return
+            }
+        }
+    }
+    Throw
 }
-
-/*
-NOT USED
-
-; The parameter value means the data you want to edit.
-; For example a string or a number.
-; The parameter section is the part in the config file
-; where the keyName can be found.
-; The parameter keyName is the name of the item
-; which you want to edit it's data.
-editConfigFile(pValue, pSection, pKeyName)
-{
-    value := pValue
-    section := pSection
-    keyName := pKeyName
-
-    IniWrite(value, configFileLocation, section, keyName)
-    Return
-}
-
-*/

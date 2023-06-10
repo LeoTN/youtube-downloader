@@ -3,8 +3,6 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "ConfigFileManager.ahk"
-
 ; Beginning of relevant getMethods.
 
 ; Enter coordinates to check a specific pixel or leave them blank to check the current one.
@@ -26,7 +24,8 @@ getPixelColorMouse(pMouseX := unset, pMouseY := unset, pColor := unset, pVariati
         color := pColor
         variation := pVariation
         Sleep(50)
-        If (PixelSearch(&OutputX, &OutputY, MouseX, MouseY, MouseX, MouseX, color, variation) = true) ; Makes finding a color more easy by accepting multiple variations.
+        ; Makes finding a color more easy by accepting multiple variations.
+        If (PixelSearch(&OutputX, &OutputY, MouseX, MouseY, MouseX, MouseX, color, variation) = true)
         {
             Return true
         }
@@ -51,7 +50,7 @@ getCurrentURL(pBooleanGetLength := false, pBooleanCreateArray := false)
     static currentURL_Array := [""]
     If (booleanCreateArray = true)
     {
-        currentURL_Array := readFile(readConfigFile(2), true)
+        currentURL_Array := readFile(readConfigFile("URL_FILE_LOCATION"), true)
     }
     If (booleanGetLength = true)
     {
@@ -87,7 +86,8 @@ getCurrentURL(pBooleanGetLength := false, pBooleanCreateArray := false)
 }
 
 ; getCurrentURL() support function.
-; If the download fails, you have to call the getCurrentURL function again, but it would have deleted one link even though it was never downloaded.
+; If the download fails, you have to call the getCurrentURL function again, but it would have deleted one link even
+; though it was never downloaded.
 ; This function prevents this error from happening, so that the seemingly deleted link will be reatached to the currentURL_Array.
 ; Enter true, to trigger the flipflop or false to get the last state.
 getCurrentURL_DownloadSuccess(pBoolean)

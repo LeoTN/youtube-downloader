@@ -3,8 +3,6 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "ConfigFileManager.ahk"
-
 ; Beginning of the error related functions.
 
 ; Checks if there are any common errors while starting a URL download.
@@ -50,7 +48,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
         error := pErrorType
         ; Reload the page.
         Send("{Browser_Refresh}")
-        Sleep(500)
+        Sleep(readConfigFile("WAIT_TIME"))
     }
     Else
     {
@@ -68,7 +66,8 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     ; Error handling section.
     If (error = "Error_Red")
     {
-        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL !", "Download Error ! Remaining attempts : " . maxAttempts + 1, "RC IconX 8192 T5")
+        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL !",
+            "Download Error ! Remaining attempts : " . maxAttempts + 1, "RC IconX 8192 T5")
 
         If (result = "Retry")
         {
@@ -87,9 +86,8 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
             startDownload(getCurrentURL(false))
             If (maxAttempts > 0)
             {
-                ; This ensures that the function does not run infinetly
-                ; The script tries the download several times and skips it after the maxAttempts number is reached ; The script tries the download several times and skips it after the maxAttempts number is reached
-                Return handleErrors("Error_Red", maxAttempts - 1)
+                ; This ensures that the function does not run infinetly.
+                ; The script tries the download several times and skips it after the maxAttempts number is reached.
             }
             Else
             {
@@ -99,11 +97,13 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     }
     Else If (error = "Error_Black")
     {
-        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL or continue and download the file manually !", "Download Error !", "OC IconX 8192 T15")
+        result := MsgBox("Failed to start downloading for an unknown reason !`n`n"
+            "Press Cancel to skip the current URL or continue and download the file manually !", "Download Error !", "OC IconX 8192 T15")
         If (result = "OK")
         {
             ; Manual download.
-            MsgBox("Manual download is required.`n`nPress OK when you want to continue `nexecution of the script !", "Action required !", "O Icon! 8192") ; Will be automatic in future.
+            MsgBox("Manual download is required.`n`nPress OK when you want to continue `nexecution of the script !",
+                "Action required !", "O Icon! 8192") ; Will be automatic in future.
 
             finished := unset
             finished := handleErrors_skipURL()
@@ -113,17 +113,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
             }
             Return true
         }
-        Else If (result = "Cancel")
-        {
-            finished := unset
-            finished := handleErrors_skipURL()
-            while (IsSet(finished) = false)
-            {
-                Sleep(500)
-            }
-            Return true
-        }
-        Else If (result = "Timeout")
+        Else If (result = "Cancel" || "Timeout")
         {
             finished := unset
             finished := handleErrors_skipURL()
@@ -137,7 +127,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     Else If (error = "Error_Black_2")
     {
         WinClose(firefoxWindow)
-        Sleep(500)
+        Sleep(readConfigFile("WAIT_TIME"))
         openDownloadPage()
         Return true
     }
