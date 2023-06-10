@@ -3,10 +3,6 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-; WARNING ! GUI IN TEST PHASE
-#Include "ConfigFileManager.ahk"
-#Include "HotKeys & Methods.ahk"
-
 fileSelectionMenuOpen := Menu()
 fileSelectionMenuOpen.Add("URL-File`tF2", (*) => openURLFile())
 fileSelectionMenuOpen.SetIcon("URL-File`tF2", "shell32.dll", 104)
@@ -43,14 +39,14 @@ fileMenu.SetIcon("&Reset...", "shell32.dll", 239)
 
 activeHotkeyMenu := Menu()
 ; Still incomplete.
-activeHotkeyMenu.Add("Terminate Script -> " . readConfigFile(11),
-    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Terminate Script -> " . readConfigFile(11), 1), "+Radio")
-activeHotkeyMenu.Add("Reload Script -> " . readConfigFile(12),
-    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Reload Script -> " . readConfigFile(12), 2), "+Radio")
-activeHotkeyMenu.Add("Pause / Continue Script -> " . readConfigFile(13),
-    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Pause / Continue Script -> " . readConfigFile(13), 3), "+Radio")
-activeHotkeyMenu.Add("Clear URL File -> " . readConfigFile(14),
-    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Clear URL File -> " . readConfigFile(14), 4), "+Radio")
+activeHotkeyMenu.Add("Terminate Script -> " . readConfigFile("TERMINATE_SCRIPT_HK"),
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Terminate Script -> " . readConfigFile("TERMINATE_SCRIPT_HK"), 1), "+Radio")
+activeHotkeyMenu.Add("Reload Script -> " . readConfigFile("RELOAD_SCRIPT_HK"),
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Reload Script -> " . readConfigFile("RELOAD_SCRIPT_HK"), 2), "+Radio")
+activeHotkeyMenu.Add("Pause / Continue Script -> " . readConfigFile("PAUSE_CONTINUE_SCRIPT_HK"),
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Pause / Continue Script -> " . readConfigFile("PAUSE_CONTINUE_SCRIPT_HK"), 3), "+Radio")
+activeHotkeyMenu.Add("Clear URL File -> " . readConfigFile("CLEAR_URL_FILE_HK"),
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Clear URL File -> " . readConfigFile("CLEAR_URL_FILE_HK"), 4), "+Radio")
 activeHotkeyMenu.Add()
 activeHotkeyMenu.Add("Enable All", (*) => GUI_MenuCheckAll("activeHotkeyMenu"))
 activeHotkeyMenu.SetIcon("Enable All", "shell32.dll", 297)

@@ -3,9 +3,6 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "ConfigFileManager.ahk"
-#Include "GUI.ahk"
-
 /*
 DEBUG SECTION
 -------------------------------------------------
@@ -14,12 +11,12 @@ Hotkey to disable/enable debug mode.
 
 +^!F1::
 {
-    If (readConfigFile(1) = true)
+    If (readConfigFile("booleanDebugMode") = true)
     {
         editConfigFile(1, false)
         MsgBox("Debug mode has been disabled.", "DEBUG MODE", "O Iconi 262144 T1")
     }
-    Else If (readConfigFile(1) = false)
+    Else If (readConfigFile("booleanDebugMode") = false)
     {
         editConfigFile(1, true)
         MsgBox("Debug mode has been enabled.", "DEBUG MODE", "O Icon! 262144 T1")
@@ -30,16 +27,16 @@ Hotkey to disable/enable debug mode.
 ; Beginning of all standard script hotkeys.
 
 ; Main hotkey (start download).
-Hotkey(readConfigFile(7), (*) => userStartDownload())
+Hotkey(readConfigFile("DOWNLOAD_HK"), (*) => userStartDownload())
 
 ; Second hotkey (collect URLs).
-Hotkey(readConfigFile(8), (*) => saveSearchBarContentsToFile())
+Hotkey(readConfigFile("URL_COLLECT_HK"), (*) => saveSearchBarContentsToFile())
 
 ; Third hotkey (collect URLs from video thumbnail).
-Hotkey(readConfigFile(9), (*) => saveVideoURLDirectlyToFile())
+Hotkey(readConfigFile("THUMBNAIL_URL_COLLECT_HK"), (*) => saveVideoURLDirectlyToFile())
 
 ; GUI hotkey (opens GUI).
-Hotkey(readConfigFile(10), (*) => Hotkey_openGUI())
+Hotkey(readConfigFile("GUI_HK"), (*) => Hotkey_openGUI())
 ; Hotkey support function to open the script GUI.
 Hotkey_openGUI()
 {
@@ -59,16 +56,16 @@ Hotkey_openGUI()
 }
 
 ; Hotkey to termniate the script.
-Hotkey(readConfigFile(11), (*) => terminateScriptPrompt(), "Off")
+Hotkey(readConfigFile("TERMINATE_SCRIPT_HK"), (*) => terminateScriptPrompt(), "Off")
 
 ; Hotkey to reload the script.
-Hotkey(readConfigFile(12), (*) => reloadScriptPrompt(), "Off")
+Hotkey(readConfigFile("RELOAD_SCRIPT_HK"), (*) => reloadScriptPrompt(), "Off")
 
 ; Hotkey to pause / continue the execution of the script.
-Hotkey(readConfigFile(13), (*) => MsgBox("Not implemented yet"), "Off")
+Hotkey(readConfigFile("PAUSE_CONTINUE_SCRIPT_HK"), (*) => MsgBox("Not implemented yet"), "Off")
 
 ; Hotkey for clearing the URL file.
-Hotkey(readConfigFile(14), (*) => clearURLFile())
+Hotkey(readConfigFile("CLEAR_URL_FILE_HK"), (*) => clearURLFile())
 
 /*
 FUNCTION SECTION
@@ -94,14 +91,14 @@ toggleHotkey(pStateArray)
         }
     }
 
-    Hotkey(readConfigFile(11), (*) => terminateScriptPrompt(), onOffArray[1])
-    Hotkey(readConfigFile(12), (*) => reloadScriptPrompt(), onOffArray[2])
-    Hotkey(readConfigFile(13), (*) => MsgBox("Not implemented yet"), onOffArray[3])
+    Hotkey(readConfigFile("TERMINATE_SCRIPT_HK"), (*) => terminateScriptPrompt(), onOffArray[1])
+    Hotkey(readConfigFile("RELOAD_SCRIPT_HK"), (*) => reloadScriptPrompt(), onOffArray[2])
+    Hotkey(readConfigFile("PAUSE_CONTINUE_SCRIPT_HK"), (*) => MsgBox("Not implemented yet"), onOffArray[3])
 }
 
 clearURLFile()
 {
-    If (FileExist(readConfigFile(2)))
+    If (FileExist(readConfigFile("URL_FILE_LOCATION")))
     {
         manageURLFile()
     }
@@ -122,7 +119,7 @@ openURLFile()
             WinActivate()
             Return true
         }
-        Run(readConfigFile(2))
+        Run(readConfigFile("URL_FILE_LOCATION"))
         Return true
     }
     Catch
@@ -141,7 +138,7 @@ openURLBackUpFile()
             WinActivate()
             Return true
         }
-        Run(readConfigFile(3))
+        Run(readConfigFile("URL_BACKUP_FILE_LOCATION"))
         Return true
     }
     Catch
@@ -165,8 +162,8 @@ openURLBlacklistFile(pBooleanShowPrompt := false)
                 {
                     DirCreate(A_WorkingDir . "\files\deleted")
                 }
-                SplitPath(readConfigFile(4), &outFileName)
-                FileMove(readConfigFile(4), A_WorkingDir . "\files\deleted\" . outFileName, true)
+                SplitPath(readConfigFile("BLACKLIST_FILE_LOCATION"), &outFileName)
+                FileMove(readConfigFile("BLACKLIST_FILE_LOCATION"), A_WorkingDir . "\files\deleted\" . outFileName, true)
                 ; Calls checkBlackListFile() in order to create a new blacklist file.
                 checkBlackListFile("generateFile", false)
                 Return
@@ -190,9 +187,9 @@ openURLBlacklistFile(pBooleanShowPrompt := false)
             WinActivate()
             Return true
         }
-        Else If (FileExist(readConfigFile(4)))
+        Else If (FileExist(readConfigFile("BLACKLIST_FILE_LOCATION")))
         {
-            Run(readConfigFile(4))
+            Run(readConfigFile("BLACKLIST_FILE_LOCATION"))
             Return true
         }
         Else
@@ -252,20 +249,20 @@ deleteFilePrompt(pFileName)
                 Case "URL-File":
                     {
                         c := 2
-                        SplitPath(readConfigFile(2), &outFileName)
-                        FileMove(readConfigFile(2), A_WorkingDir . "\files\deleted\" . outFileName)
+                        SplitPath(readConfigFile("URL_FILE_LOCATION"), &outFileName)
+                        FileMove(readConfigFile("URL_FILE_LOCATION"), A_WorkingDir . "\files\deleted\" . outFileName)
                     }
                 Case "URL-BackUp-File":
                     {
                         c := 3
-                        SplitPath(readConfigFile(3), &outFileName)
-                        FileMove(readConfigFile(3), A_WorkingDir . "\files\deleted\" . outFileName)
+                        SplitPath(readConfigFile("URL_BACKUP_FILE_LOCATION"), &outFileName)
+                        FileMove(readConfigFile("URL_BACKUP_FILE_LOCATION"), A_WorkingDir . "\files\deleted\" . outFileName)
                     }
                 Case "URL-Blacklist-File":
                     {
                         c := 4
-                        SplitPath(readConfigFile(4), &outFileName)
-                        FileMove(readConfigFile(4), A_WorkingDir . "\files\deleted\" . outFileName)
+                        SplitPath(readConfigFile("BLACKLIST_FILE_LOCATION"), &outFileName)
+                        FileMove(readConfigFile("BLACKLIST_FILE_LOCATION"), A_WorkingDir . "\files\deleted\" . outFileName)
                     }
                 Case "Downloaded Videos":
                     {

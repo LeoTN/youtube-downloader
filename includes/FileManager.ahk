@@ -3,8 +3,6 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "ConfigFileManager.ahk"
-
 ; Beginning of the file manager functions.
 
 ; Save search bar contents to text file.
@@ -26,14 +24,14 @@ saveSearchBarContentsToFile()
             Break
         }
     }
-    If (FileExist(readConfigFile(2)))
+    If (FileExist(readConfigFile("URL_FILE_LOCATION")))
     {
 
         writeToURLFile(clipboardContent)
     }
     Else
     {
-        FileAppend("Made by Donnerbaer" . "`n", readConfigFile(2))
+        FileAppend("Made by Donnerbaer" . "`n", readConfigFile("URL_FILE_LOCATION"))
         writeToURLFile(clipboardContent)
     }
 }
@@ -58,13 +56,13 @@ saveVideoURLDirectlyToFile()
     Else
     {
         clipboardContent := A_Clipboard
-        If (FileExist(readConfigFile(2)))
+        If (FileExist(readConfigFile("URL_FILE_LOCATION")))
         {
             writeToURLFile(clipboardContent)
         }
         Else
         {
-            FileAppend("Made by Donnerbaer" . "`n", readConfigFile(2))
+            FileAppend("Made by Donnerbaer" . "`n", readConfigFile("URL_FILE_LOCATION"))
             writeToURLFile(clipboardContent)
         }
     }
@@ -74,7 +72,7 @@ saveVideoURLDirectlyToFile()
 writeToURLFile(pContent)
 {
     content := pContent
-    tmp := readFile(readConfigFile(2), true)
+    tmp := readFile(readConfigFile("URL_FILE_LOCATION"), true)
     ; Check if the URL already exists in the file.
     i := getCurrentURL(true, true)
     ; Content check loop
@@ -89,7 +87,7 @@ writeToURLFile(pContent)
     {
         Return
     }
-    FileAppend(content . "`n", readConfigFile(2))
+    FileAppend(content . "`n", readConfigFile("URL_FILE_LOCATION"))
 }
 
 ; Reads a specified file and creates an array object with it.
@@ -140,7 +138,7 @@ checkBlackListFile(pItemToCompare, pBooleanShowPrompt := true)
     ; You can add content to the ignore list by adding it to the .txt file
     ; or directly to the template array.
     templateArray := ["https://www.youtube.com/"]
-    If (!FileExist(readConfigFile(4)))
+    If (!FileExist(readConfigFile("BLACKLIST_FILE_LOCATION")))
     {
         If (booleanShowPrompt = true)
         {
@@ -158,7 +156,7 @@ checkBlackListFile(pItemToCompare, pBooleanShowPrompt := true)
                 ; Creates the blacklist file with the template.
                 Loop templateArray.Length
                 {
-                    FileAppend(templateArray[A_Index] . "`n", readConfigFile(4))
+                    FileAppend(templateArray[A_Index] . "`n", readConfigFile("BLACKLIST_FILE_LOCATION"))
                 }
                 checkBlackListFile(itemToCompare, booleanShowPrompt)
             }
@@ -174,23 +172,23 @@ checkBlackListFile(pItemToCompare, pBooleanShowPrompt := true)
         }
     }
     ; In case something has changed in the blacklist file.
-    tmpArray := readFile(readConfigFile(4))
+    tmpArray := readFile(readConfigFile("BLACKLIST_FILE_LOCATION"))
     If (!tmpArray.Has(1))
     {
-        FileDelete(readConfigFile(4))
+        FileDelete(readConfigFile("BLACKLIST_FILE_LOCATION"))
         Return checkBlackListFile(itemToCompare)
     }
     Loop templateArray.Length
     {
         If (templateArray[A_Index] != tmpArray[A_Index])
         {
-            FileDelete(readConfigFile(4))
+            FileDelete(readConfigFile("BLACKLIST_FILE_LOCATION"))
             Try
             {
                 ; Creates the blacklist file with the template.
                 Loop templateArray.Length
                 {
-                    FileAppend(templateArray[A_Index] . "`n", readConfigFile(4))
+                    FileAppend(templateArray[A_Index] . "`n", readConfigFile("BLACKLIST_FILE_LOCATION"))
                 }
             }
             Catch
@@ -203,7 +201,7 @@ checkBlackListFile(pItemToCompare, pBooleanShowPrompt := true)
     ; Compare the item if it matches with the blacklist.
     ; NOTE : This search method is not case sensitive and
     ; it does not search like InStr() !
-    blacklistArray := readFile(readConfigFile(4))
+    blacklistArray := readFile(readConfigFile("BLACKLIST_FILE_LOCATION"))
 
     Loop blacklistArray.Length
     {
@@ -223,7 +221,7 @@ manageURLFile()
     {
         Try
         {
-            FileMove(readConfigFile(2), readConfigFile(3), true)
+            FileMove(readConfigFile("URL_FILE_LOCATION"), readConfigFile("URL_BACKUP_FILE_LOCATION"), true)
             Sleep(100)
             Reload()
         }
