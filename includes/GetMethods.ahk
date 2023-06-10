@@ -86,7 +86,8 @@ getCurrentURL(pBooleanGetLength := false, pBooleanCreateArray := false)
 }
 
 ; getCurrentURL() support function.
-; If the download fails, you have to call the getCurrentURL function again, but it would have deleted one link even though it was never downloaded.
+; If the download fails, you have to call the getCurrentURL function again, but it would have deleted one link even
+; though it was never downloaded.
 ; This function prevents this error from happening, so that the seemingly deleted link will be reatached to the currentURL_Array.
 ; Enter true, to trigger the flipflop or false to get the last state.
 getCurrentURL_DownloadSuccess(pBoolean)

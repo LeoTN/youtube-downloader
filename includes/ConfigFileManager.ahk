@@ -133,7 +133,8 @@ createDefaultConfigFile(pBooleanCreateBackUp := true, pBooleanShowPrompt := fals
     ; In case you forget to specify a section for EACH new config file entry this will remind you to do so :D
     If (configVariableNameArray.Length != configSectionNameArray.Length)
     {
-        MsgBox("Not every config file entry has been asigned to a section !`n`nPlease fix this by checking both arrays.", "Error", "O IconX")
+        MsgBox("Not every config file entry has been asigned to a section !`n`nPlease fix this by checking both arrays.",
+            "Error", "O IconX")
         MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
         ExitApp()
     }
@@ -145,7 +146,8 @@ createDefaultConfigFile(pBooleanCreateBackUp := true, pBooleanShowPrompt := fals
         */
         Loop configVariableNameArray.Length
         {
-            IniWrite(%configVariableNameArray[A_Index]%, configFileLocation, configSectionNameArray[A_Index], configVariableNameArray[A_Index])
+            IniWrite(%configVariableNameArray[A_Index]%, configFileLocation, configSectionNameArray[A_Index],
+            configVariableNameArray[A_Index])
         }
         MsgBox("A default config file has been generated.", "Information", "O Iconi T3")
     }
@@ -248,7 +250,7 @@ readConfigFile(pOptionName)
     ExitApp()
 }
 
-; The parameter A_Index specifies a specific
+; The parameter optionName specifies a specific
 ; variable's content which you want to edit.
 ; The parameter data holds the new data for the config file.
 editConfigFile(pOptionName, pData)
