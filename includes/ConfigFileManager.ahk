@@ -39,14 +39,16 @@ BLACKLIST_FILE_LOCATION := A_ScriptDir . "\files\YT_BLACKLIST.txt"
 WAIT_TIME := 500
 ; Sets the default download format for your collected URLs.
 DOWNLOAD_FORMAT := "MP4"
+; Stores which hotkeys are enabled / disabled via the GUI.
+HOTKEY_STATE_ARRAY := "[0, 0, 0, 0]"
 ; Just a list of all standard hotkeys.
-DOWNLOAD_HK := "+^!d"
-URL_COLLECT_HK := "+^!s"
-THUMBNAIL_URL_COLLECT_HK := "+^!f"
-GUI_HK := "+^!g"
-TERMINATE_SCRIPT_HK := "+^!t"
-RELOAD_SCRIPT_HK := "+^!r"
-PAUSE_CONTINUE_SCRIPT_HK := "+^!p"
+DOWNLOAD_HK := "+^!D"
+URL_COLLECT_HK := "+^!S"
+THUMBNAIL_URL_COLLECT_HK := "+^!F"
+GUI_HK := "+^!G"
+TERMINATE_SCRIPT_HK := "+^!T"
+RELOAD_SCRIPT_HK := "+^!R"
+PAUSE_CONTINUE_SCRIPT_HK := "+^!P"
 CLEAR_URL_FILE_HK := "!F1"
 ;------------------------------------------------
 
@@ -66,16 +68,17 @@ configVariableNameArray := [
     "URL_FILE_LOCATION",
     "URL_BACKUP_FILE_LOCATION",
     "BLACKLIST_FILE_LOCATION",
-    "WAIT_TIME",
+    "WAIT_TIME", ; 5
     "DOWNLOAD_FORMAT",
+    "HOTKEY_STATE_ARRAY",
     "DOWNLOAD_HK",
     "URL_COLLECT_HK",
-    "THUMBNAIL_URL_COLLECT_HK",
+    "THUMBNAIL_URL_COLLECT_HK", ; 10
     "GUI_HK",
     "TERMINATE_SCRIPT_HK",
     "RELOAD_SCRIPT_HK",
     "PAUSE_CONTINUE_SCRIPT_HK",
-    "CLEAR_URL_FILE_HK"
+    "CLEAR_URL_FILE_HK" ; 15
 ]
 ; Create an array including the matching section name for EACH item in the configVariableNameArray.
 ; This makes it easier to read and write the config file.
@@ -85,16 +88,17 @@ configSectionNameArray := [
     "FileLocations",
     "FileLocations",
     "FileLocations",
+    "Options", ; 5
     "Options",
-    "Options",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys", ; 10
     "Hotkeys",
     "Hotkeys",
     "Hotkeys",
     "Hotkeys",
-    "Hotkeys",
-    "Hotkeys",
-    "Hotkeys",
-    "Hotkeys",
+    "Hotkeys" ; 15
 ]
 
 /*
@@ -263,14 +267,23 @@ editConfigFile(pOptionName, pData)
         ; Searches in the config file for the given option name to then change the value.
         If (InStr(configVariableNameArray[A_Index], optionName, 0))
         {
-            IniWrite(data, configFileLocation
-                , configSectionNameArray[A_Index]
-                , configVariableNameArray[A_Index])
-            Return
-        }
-        Else
-        {
-            Throw
+            ; Check just in case the given data is an array.
+            If (data.Has(1) = true)
+            {
+                dataString := arrayToString(data)
+                IniWrite(dataString, configFileLocation
+                    , configSectionNameArray[A_Index]
+                    , configVariableNameArray[A_Index])
+                Return
+            }
+            Else
+            {
+                IniWrite(data, configFileLocation
+                    , configSectionNameArray[A_Index]
+                    , configVariableNameArray[A_Index])
+                Return
+            }
         }
     }
+    Throw
 }

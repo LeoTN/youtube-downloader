@@ -9,13 +9,14 @@ CoordMode "Mouse", "Client"
 ; Sets the directory for all following files.
 #Include "includes\"
 #Include "ConfigFileManager.ahk"
+#Include "HotKeys & Methods.ahk"
 #Include "DownloadManager.ahk"
 #Include "FileManager.ahk"
 #Include "ErrorManager.ahk"
 #Include "GetMethods.ahk"
 #Include "GUI.ahk"
 onInit()
-#Include "HotKeys & Methods.ahk"
+
 
 ; Runs a list of commands when the script is launched.
 onInit()
@@ -38,7 +39,7 @@ F6::
     If (readConfigFile("booleanDebugMode") = true)
     {
         ; Enter code below.
-        MsgBox(readConfigFile("URL_FILE_LOCATION"))
+        GUI_MenuCheckHandler("activeHotkeyMenu")
     }
     Return
 }
@@ -48,6 +49,8 @@ F7::
     If (readConfigFile("booleanDebugMode") = true)
     {
         ; Enter code below
+        test := Array("[1,2,3]")
+        MsgBox(test[1])
     }
     Return
 }
