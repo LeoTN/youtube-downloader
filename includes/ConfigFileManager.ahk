@@ -12,7 +12,7 @@ DEBUG SECTION
 Add debug variables here.
 */
 ; This variable is also written into the config file.
-booleanDebugMode := false
+global booleanDebugMode := false
 
 ;------------------------------------------------
 
@@ -36,10 +36,18 @@ BLACKLIST_FILE_LOCATION := A_ScriptDir . "\files\YT_BLACKLIST.txt"
 ; The standard wait time can be increased if you are on a slow system
 ; or decreased when your computer is a quantum computer.
 ; NOTE : Changing this value at your own risk ! May lead to errors.
-STANDARD_WAIT_TIME := 500
+WAIT_TIME := 500
 ; Sets the default download format for your collected URLs.
-STANDARD_DOWNLOAD_FORMAT := "MP4"
-
+DOWNLOAD_FORMAT := "MP4"
+; Just a list of all standard hotkeys.
+DOWNLOAD_HK := "+^!d"
+URL_COLLECT_HK := "+^!s"
+THUMBNAIL_URL_COLLECT_HK := "+^!f"
+GUI_HK := "+^!g"
+TERMINATE_SCRIPT_HK := "+^!t"
+RELOAD_SCRIPT_HK := "+^!r"
+PAUSE_CONTINUE_SCRIPT_HK := "+^!p"
+CLEAR_URL_FILE_HK := "!F1"
 ;------------------------------------------------
 
 ; Will contain all config values matching with each variable name in the array below.
@@ -58,8 +66,16 @@ configVariableNameArray := [
     "URL_FILE_LOCATION",
     "URL_BACKUP_FILE_LOCATION",
     "BLACKLIST_FILE_LOCATION",
-    "STANDARD_WAIT_TIME",
-    "STANDARD_DOWNLOAD_FORMAT"
+    "WAIT_TIME", ; 5
+    "DOWNLOAD_FORMAT",
+    "DOWNLOAD_HK",
+    "URL_COLLECT_HK",
+    "THUMBNAIL_URL_COLLECT_HK",
+    "GUI_HK", ;  10
+    "TERMINATE_SCRIPT_HK",
+    "RELOAD_SCRIPT_HK",
+    "PAUSE_CONTINUE_SCRIPT_HK",
+    "CLEAR_URL_FILE_HK"
 ]
 ; Create an array including the matching section name for EACH item in the configVariableNameArray.
 ; This makes it easier to read and write the config file.
@@ -69,8 +85,16 @@ configSectionNameArray := [
     "FileLocations",
     "FileLocations",
     "FileLocations",
-    "Optimisation",
-    "Optimisation"
+    "Options", ; 5
+    "Options",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys", ; 10
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys",
 ]
 
 /*
@@ -244,24 +268,3 @@ editConfigFile(pVariableNameArrayIndex, pData)
         , configSectionNameArray[variableNameArrayIndex]
         , configVariableNameArray[variableNameArrayIndex])
 }
-
-/*
-NOT USED
-
-; The parameter value means the data you want to edit.
-; For example a string or a number.
-; The parameter section is the part in the config file
-; where the keyName can be found.
-; The parameter keyName is the name of the item
-; which you want to edit it's data.
-editConfigFile(pValue, pSection, pKeyName)
-{
-    value := pValue
-    section := pSection
-    keyName := pKeyName
-
-    IniWrite(value, configFileLocation, section, keyName)
-    Return
-}
-
-*/

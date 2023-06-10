@@ -43,12 +43,14 @@ fileMenu.SetIcon("&Reset...", "shell32.dll", 239)
 
 activeHotkeyMenu := Menu()
 ; Still incomplete.
-activeHotkeyMenu.Add("Terminate Script -> " . "add_hotkey_here",
-    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Terminate Script -> " . "add_hotkey_here", 1), "+Radio")
-activeHotkeyMenu.Add("Reload Script -> " . "add_hotkey_here",
-    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Reload Script -> " . "add_hotkey_here", 2), "+Radio")
-activeHotkeyMenu.Add("Clear URL File -> " . "add_hotkey_here",
-    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Clear URL File -> " . "add_hotkey_here", 3), "+Radio")
+activeHotkeyMenu.Add("Terminate Script -> " . readConfigFile(11),
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Terminate Script -> " . readConfigFile(11), 1), "+Radio")
+activeHotkeyMenu.Add("Reload Script -> " . readConfigFile(12),
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Reload Script -> " . readConfigFile(12), 2), "+Radio")
+activeHotkeyMenu.Add("Pause / Continue Script -> " . readConfigFile(13),
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Pause / Continue Script -> " . readConfigFile(13), 3), "+Radio")
+activeHotkeyMenu.Add("Clear URL File -> " . readConfigFile(14),
+    (*) => GUI_ToggleCheck("activeHotkeyMenu", "Clear URL File -> " . readConfigFile(14), 4), "+Radio")
 activeHotkeyMenu.Add()
 activeHotkeyMenu.Add("Enable All", (*) => GUI_MenuCheckAll("activeHotkeyMenu"))
 activeHotkeyMenu.SetIcon("Enable All", "shell32.dll", 297)
@@ -76,8 +78,8 @@ allMenus.SetIcon("&Options", "shell32.dll", 317)
 allMenus.Add("Info", helpMenu)
 allMenus.SetIcon("Info", "shell32.dll", 24)
 
-myGUI := Gui(, "YouTube Downloader Control Panel")
-myGUI.MenuBar := allMenus
+mainGUI := Gui(, "YouTube Downloader Control Panel")
+mainGUI.MenuBar := allMenus
 
 /*
 GUI SUPPORT FUNCTIONS
@@ -134,32 +136,41 @@ GUI_MenuUncheckAll(pMenuName)
 ; if there is a checkmark next to an option.
 ; The parameter menuName defines which menu's submenus will be changed.
 ; Enter "toggle" as pBooleanState to toggle a menu option's boolean value.
-; Leave booleanState ommited to receive the current value of a submenu item.
-GUI_MenuCheckHandler(pMenuName, pSubMenuPosition, pBooleanState := unset)
+; Leave only booleanState ommited to receive the current value of a submenu item or
+; every parameter to receive the complete array.
+GUI_MenuCheckHandler(pMenuName := unset, pSubMenuPosition := unset, pBooleanState := unset)
 {
-    menuName := pMenuName
-    subMenuPosition := pSubMenuPosition
-    If (IsSet(pBooleanState) = true)
+    static menuCheckArray_activeHotKeyMenu := [0, 0, 0]
+    Try
+    {
+        menuName := pMenuName
+        subMenuPosition := pSubMenuPosition
+    }
+    Catch
+    {
+        Return menuCheckArray_activeHotKeyMenu
+    }
+    Try
     {
         booleanState := pBooleanState
-    }
 
-    static menuCheckArray_activeHotKeyMenu := [0, 0, 0]
-    If (menuName = "activeHotkeyMenu")
-    {
-        If (IsSet(booleanState) = true && booleanState = "toggle")
+        If (menuName = "activeHotkeyMenu")
         {
-            ; Toggles the boolean value at a specific position.
-            menuCheckArray_activeHotKeyMenu[subMenuPosition] := !menuCheckArray_activeHotKeyMenu[subMenuPosition]
-        }
-        ; Only if there is a state given to apply to a menu.
-        Else If (IsSet(booleanState) && (booleanState = true || booleanState = false))
-        {
-            menuCheckArray_activeHotKeyMenu[subMenuPosition] := booleanState
-        }
-        Else
-        {
-            Return menuCheckArray_activeHotKeyMenu[subMenuPosition]
+            If (booleanState = "toggle")
+            {
+                ; Toggles the boolean value at a specific position.
+                menuCheckArray_activeHotKeyMenu[subMenuPosition] := !menuCheckArray_activeHotKeyMenu[subMenuPosition]
+            }
+            ; Only if there is a state given to apply to a menu.
+            Else If (booleanState = true || booleanState = false)
+            {
+                menuCheckArray_activeHotKeyMenu[subMenuPosition] := booleanState
+            }
+            Else
+            {
+                Return menuCheckArray_activeHotKeyMenu[subMenuPosition]
+            }
+            toggleHotkey(menuCheckArray_activeHotKeyMenu)
         }
     }
     Return
