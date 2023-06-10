@@ -188,7 +188,7 @@ readConfigFile(pOptionName)
             }
         }
     }
-    Loop (configFileContentArray.Length)
+    Loop (configVariableNameArray.Length)
     {
         ; Searches in the config file for the given option name to then extract the value.
         If (InStr(configVariableNameArray[A_Index], optionName, 0))
@@ -251,12 +251,24 @@ readConfigFile(pOptionName)
 ; The parameter A_Index specifies a specific
 ; variable's content which you want to edit.
 ; The parameter data holds the new data for the config file.
-editConfigFile(pVariableNameArrayIndex, pData)
+editConfigFile(pOptionName, pData)
 {
-    A_Index := pVariableNameArrayIndex
+    optionName := pOptionName
     data := pData
-    ; Basically the same as creating the config file but not with a loop.
-    IniWrite(data, configFileLocation
-        , configSectionNameArray[A_Index]
-        , configVariableNameArray[A_Index])
+    ; Basically the same as creating the config file.
+    Loop (configVariableNameArray.Length)
+    {
+        ; Searches in the config file for the given option name to then change the value.
+        If (InStr(configVariableNameArray[A_Index], optionName, 0))
+        {
+            IniWrite(data, configFileLocation
+                , configSectionNameArray[A_Index]
+                , configVariableNameArray[A_Index])
+            Return
+        }
+        Else
+        {
+            Throw
+        }
+    }
 }
