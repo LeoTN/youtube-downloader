@@ -192,7 +192,7 @@ waitForDownloadButton()
 {
     WinActivate(firefoxWindow)
     ; Enter number in seconds.
-    timeout := 10
+    timeout := 30
     w := 1
     While (w = 1)
     {
