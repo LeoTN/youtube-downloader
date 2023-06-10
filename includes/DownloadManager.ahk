@@ -344,7 +344,8 @@ setDownloadFormat(pFormat)
     }
     Else
     {
-        MsgBox("Could execute setDownloadFormat() properly !`nCheck the config file for a valid format at : `n " . configVariableNameArray[6], "Error", "O Icon! T10")
+        MsgBox("Could execute setDownloadFormat() properly !`nCheck the config file for a valid format at : `n "
+            . configVariableNameArray[6], "Error", "O Icon! T10")
     }
 }
 

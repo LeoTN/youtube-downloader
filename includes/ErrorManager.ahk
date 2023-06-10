@@ -66,7 +66,8 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     ; Error handling section.
     If (error = "Error_Red")
     {
-        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL !", "Download Error ! Remaining attempts : " . maxAttempts + 1, "RC IconX 8192 T5")
+        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL !",
+            "Download Error ! Remaining attempts : " . maxAttempts + 1, "RC IconX 8192 T5")
 
         If (result = "Retry")
         {
@@ -96,11 +97,13 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     }
     Else If (error = "Error_Black")
     {
-        result := MsgBox("Failed to start downloading for an unknown reason !`n`nPress Cancel to skip the current URL or continue and download the file manually !", "Download Error !", "OC IconX 8192 T15")
+        result := MsgBox("Failed to start downloading for an unknown reason !`n`n"
+            "Press Cancel to skip the current URL or continue and download the file manually !", "Download Error !", "OC IconX 8192 T15")
         If (result = "OK")
         {
             ; Manual download.
-            MsgBox("Manual download is required.`n`nPress OK when you want to continue `nexecution of the script !", "Action required !", "O Icon! 8192") ; Will be automatic in future.
+            MsgBox("Manual download is required.`n`nPress OK when you want to continue `nexecution of the script !",
+                "Action required !", "O Icon! 8192") ; Will be automatic in future.
 
             finished := unset
             finished := handleErrors_skipURL()

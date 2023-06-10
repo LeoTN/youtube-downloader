@@ -39,14 +39,16 @@ BLACKLIST_FILE_LOCATION := A_ScriptDir . "\files\YT_BLACKLIST.txt"
 WAIT_TIME := 500
 ; Sets the default download format for your collected URLs.
 DOWNLOAD_FORMAT := "MP4"
+; Stores which hotkeys are enabled / disabled via the GUI.
+HOTKEY_STATE_ARRAY := "[0, 0, 0, 0]"
 ; Just a list of all standard hotkeys.
-DOWNLOAD_HK := "+^!d"
-URL_COLLECT_HK := "+^!s"
-THUMBNAIL_URL_COLLECT_HK := "+^!f"
-GUI_HK := "+^!g"
-TERMINATE_SCRIPT_HK := "+^!t"
-RELOAD_SCRIPT_HK := "+^!r"
-PAUSE_CONTINUE_SCRIPT_HK := "+^!p"
+DOWNLOAD_HK := "+^!D"
+URL_COLLECT_HK := "+^!S"
+THUMBNAIL_URL_COLLECT_HK := "+^!F"
+GUI_HK := "+^!G"
+TERMINATE_SCRIPT_HK := "+^!T"
+RELOAD_SCRIPT_HK := "+^!R"
+PAUSE_CONTINUE_SCRIPT_HK := "+^!P"
 CLEAR_URL_FILE_HK := "!F1"
 ;------------------------------------------------
 
@@ -66,16 +68,17 @@ configVariableNameArray := [
     "URL_FILE_LOCATION",
     "URL_BACKUP_FILE_LOCATION",
     "BLACKLIST_FILE_LOCATION",
-    "WAIT_TIME",
+    "WAIT_TIME", ; 5
     "DOWNLOAD_FORMAT",
+    "HOTKEY_STATE_ARRAY",
     "DOWNLOAD_HK",
     "URL_COLLECT_HK",
-    "THUMBNAIL_URL_COLLECT_HK",
+    "THUMBNAIL_URL_COLLECT_HK", ; 10
     "GUI_HK",
     "TERMINATE_SCRIPT_HK",
     "RELOAD_SCRIPT_HK",
     "PAUSE_CONTINUE_SCRIPT_HK",
-    "CLEAR_URL_FILE_HK"
+    "CLEAR_URL_FILE_HK" ; 15
 ]
 ; Create an array including the matching section name for EACH item in the configVariableNameArray.
 ; This makes it easier to read and write the config file.
@@ -85,16 +88,17 @@ configSectionNameArray := [
     "FileLocations",
     "FileLocations",
     "FileLocations",
+    "Options", ; 5
     "Options",
-    "Options",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys", ; 10
     "Hotkeys",
     "Hotkeys",
     "Hotkeys",
     "Hotkeys",
-    "Hotkeys",
-    "Hotkeys",
-    "Hotkeys",
-    "Hotkeys",
+    "Hotkeys" ; 15
 ]
 
 /*
@@ -133,7 +137,8 @@ createDefaultConfigFile(pBooleanCreateBackUp := true, pBooleanShowPrompt := fals
     ; In case you forget to specify a section for EACH new config file entry this will remind you to do so :D
     If (configVariableNameArray.Length != configSectionNameArray.Length)
     {
-        MsgBox("Not every config file entry has been asigned to a section !`n`nPlease fix this by checking both arrays.", "Error", "O IconX")
+        MsgBox("Not every config file entry has been asigned to a section !`n`nPlease fix this by checking both arrays.",
+            "Error", "O IconX")
         MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
         ExitApp()
     }
@@ -145,7 +150,8 @@ createDefaultConfigFile(pBooleanCreateBackUp := true, pBooleanShowPrompt := fals
         */
         Loop configVariableNameArray.Length
         {
-            IniWrite(%configVariableNameArray[A_Index]%, configFileLocation, configSectionNameArray[A_Index], configVariableNameArray[A_Index])
+            IniWrite(%configVariableNameArray[A_Index]%, configFileLocation, configSectionNameArray[A_Index],
+            configVariableNameArray[A_Index])
         }
         MsgBox("A default config file has been generated.", "Information", "O Iconi T3")
     }
@@ -188,7 +194,7 @@ readConfigFile(pOptionName)
             }
         }
     }
-    Loop (configFileContentArray.Length)
+    Loop (configVariableNameArray.Length)
     {
         ; Searches in the config file for the given option name to then extract the value.
         If (InStr(configVariableNameArray[A_Index], optionName, 0))
@@ -248,15 +254,36 @@ readConfigFile(pOptionName)
     ExitApp()
 }
 
-; The parameter A_Index specifies a specific
+; The parameter optionName specifies a specific
 ; variable's content which you want to edit.
 ; The parameter data holds the new data for the config file.
-editConfigFile(pVariableNameArrayIndex, pData)
+editConfigFile(pOptionName, pData)
 {
-    A_Index := pVariableNameArrayIndex
+    optionName := pOptionName
     data := pData
-    ; Basically the same as creating the config file but not with a loop.
-    IniWrite(data, configFileLocation
-        , configSectionNameArray[A_Index]
-        , configVariableNameArray[A_Index])
+    ; Basically the same as creating the config file.
+    Loop (configVariableNameArray.Length)
+    {
+        ; Searches in the config file for the given option name to then change the value.
+        If (InStr(configVariableNameArray[A_Index], optionName, 0))
+        {
+            ; Check just in case the given data is an array.
+            If (data.Has(1) = true)
+            {
+                dataString := arrayToString(data)
+                IniWrite(dataString, configFileLocation
+                    , configSectionNameArray[A_Index]
+                    , configVariableNameArray[A_Index])
+                Return
+            }
+            Else
+            {
+                IniWrite(data, configFileLocation
+                    , configSectionNameArray[A_Index]
+                    , configVariableNameArray[A_Index])
+                Return
+            }
+        }
+    }
+    Throw
 }
