@@ -13,12 +13,12 @@ Hotkey to disable/enable debug mode.
 {
     If (readConfigFile("booleanDebugMode") = true)
     {
-        editConfigFile(1, false)
+        editConfigFile("booleanDebugMode", false)
         MsgBox("Debug mode has been disabled.", "DEBUG MODE", "O Iconi 262144 T1")
     }
     Else If (readConfigFile("booleanDebugMode") = false)
     {
-        editConfigFile(1, true)
+        editConfigFile("booleanDebugMode", true)
         MsgBox("Debug mode has been enabled.", "DEBUG MODE", "O Icon! 262144 T1")
     }
     Return
