@@ -3,8 +3,6 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "ConfigFileManager.ahk"
-
 ; Beginning of the error related functions.
 
 ; Checks if there are any common errors while starting a URL download.
@@ -50,7 +48,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
         error := pErrorType
         ; Reload the page.
         Send("{Browser_Refresh}")
-        Sleep(readConfigFile(5))
+        Sleep(readConfigFile("WAIT_TIME"))
     }
     Else
     {
@@ -126,7 +124,7 @@ handleErrors(pErrorType := unset, pMaxAttempts := 2)
     Else If (error = "Error_Black_2")
     {
         WinClose(firefoxWindow)
-        Sleep(readConfigFile(5))
+        Sleep(readConfigFile("WAIT_TIME"))
         openDownloadPage()
         Return true
     }

@@ -13,6 +13,7 @@ CoordMode "Mouse", "Client"
 #Include "FileManager.ahk"
 #Include "ErrorManager.ahk"
 #Include "GetMethods.ahk"
+#Include "GUI.ahk"
 onInit()
 #Include "HotKeys & Methods.ahk"
 
@@ -20,7 +21,7 @@ onInit()
 onInit()
 {
     ; Only called to check the config file status.
-    readConfigFile()
+    readConfigFile("booleanDebugMode")
 }
 
 ; NOTE : This script currently only works with firefox as your default browser!
@@ -34,16 +35,17 @@ Add debug hotkeys here.
 ; Debug hotkey template.
 F6::
 {
-    If (readConfigFile(1) = true)
+    If (readConfigFile("booleanDebugMode") = true)
     {
         ; Enter code below.
+        MsgBox(readConfigFile("URL_FILE_LOCATION"))
     }
     Return
 }
 
 F7::
 {
-    If (readConfigFile(1) = true)
+    If (readConfigFile("booleanDebugMode") = true)
     {
         ; Enter code below
     }

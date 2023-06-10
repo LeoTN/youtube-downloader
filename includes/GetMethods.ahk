@@ -3,8 +3,6 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "ConfigFileManager.ahk"
-
 ; Beginning of relevant getMethods.
 
 ; Enter coordinates to check a specific pixel or leave them blank to check the current one.
@@ -52,7 +50,7 @@ getCurrentURL(pBooleanGetLength := false, pBooleanCreateArray := false)
     static currentURL_Array := [""]
     If (booleanCreateArray = true)
     {
-        currentURL_Array := readFile(readConfigFile(2), true)
+        currentURL_Array := readFile(readConfigFile("URL_FILE_LOCATION"), true)
     }
     If (booleanGetLength = true)
     {

@@ -3,17 +3,15 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-#Include "ConfigFileManager.ahk"
-
 ; Beginning of the download related functions.
 
 userStartDownload()
 {
-    If (FileExist(readConfigFile(2)))
+    If (FileExist(readConfigFile("URL_FILE_LOCATION")))
     {
         openDownloadPage()
         ; In case someone decides to download as MP3 by default.
-        If (readConfigFile(6) = "MP3")
+        If (readConfigFile("DOWNLOAD_FORMAT") = "MP3")
         {
             setDownloadFormat("MP3")
         }
@@ -63,16 +61,16 @@ startDownload(pURL)
         ; Focus text box.
         If (findTextBar() = true)
         {
-            Sleep(readConfigFile(5))
+            Sleep(readConfigFile("WAIT_TIME"))
             Send(URL)
-            Sleep(readConfigFile(5))
+            Sleep(readConfigFile("WAIT_TIME"))
             ; Click start button.
             If (findStartButton() = true)
             {
                 ; Wait for the website to process.
                 If (waitForDownloadButton() = true)
                 {
-                    Sleep(readConfigFile(5))
+                    Sleep(readConfigFile("WAIT_TIME"))
                     If (findDownloadButton() = true)
                     {
                         If (getCurrentURL(true) <= 0)
@@ -135,14 +133,14 @@ openDownloadPage()
     If (!WinExist("ahk_id " . firefoxID))
     {
         Run(firefoxLocation)
-        Sleep(readConfigFile(5))
+        Sleep(readConfigFile("WAIT_TIME"))
         firefoxID := WinGetID("A")
         firefoxWindow := "ahk_id " . firefoxID
     }
     If (findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox") = false)
     {
         ; Wait time depends on the system speed.
-        Sleep(readConfigFile(5))
+        Sleep(readConfigFile("WAIT_TIME"))
         Try
         {
             Run("https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist")
@@ -160,7 +158,7 @@ openDownloadPage()
         currentTabName := WinGetTitle(firefoxWindow)
         If (currentTabName = "YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
         {
-            Sleep(readConfigFile(5))
+            Sleep(readConfigFile("WAIT_TIME"))
             Break
         }
     }
