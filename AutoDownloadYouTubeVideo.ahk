@@ -24,6 +24,8 @@ onInit()
     ; Only called to check the config file status.
     readConfigFile("booleanDebugMode")
     checkBlackListFile("createBlackListFile")
+    Hotkey_onInit
+    GUI_onInit()
 }
 
 ; NOTE : This script currently only works with firefox as your default browser!

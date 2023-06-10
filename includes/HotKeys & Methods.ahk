@@ -2,7 +2,6 @@
 SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
-Hotkey_onInit()
 
 /*
 DEBUG SECTION

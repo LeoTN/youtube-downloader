@@ -3,8 +3,6 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-GUI_onInit()
-
 createMainGUI()
 {
     Global
