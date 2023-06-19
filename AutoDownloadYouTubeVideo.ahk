@@ -3,6 +3,7 @@
 SendMode "Input"
 SetWorkingDir A_ScriptDir
 CoordMode "Mouse", "Client"
+#MaxThreadsPerHotkey 1
 #Warn Unreachable, Off
 
 ; Imports important functions and variables

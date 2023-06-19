@@ -79,7 +79,7 @@ startDownload(pURL)
                             Sleep(3000)
                             result := MsgBox("Would you like to close the browser instance now?", "Download completed !", "36 T5")
 
-                            If (result = "Yes" || "Timeout")
+                            If (result = "Yes" || result = "Timeout")
                             {
                                 WinClose(firefoxWindow)
                                 manageURLFile()
