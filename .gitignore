@@ -1,5 +1,5 @@
 AutoDownloadYouTubeVideo.exe
 .vscode/
-files/*.ini
+files/config
 files/*.txt
 files/download
