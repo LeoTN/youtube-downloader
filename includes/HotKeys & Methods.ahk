@@ -41,13 +41,13 @@ registerHotkeys()
     ; Beginning of all standard script hotkeys.
 
     ; Main hotkey (start download).
-    Hotkey(readConfigFile("DOWNLOAD_HK"), (*) => startDownload(commandString), "Off")
+    Hotkey(readConfigFile("DOWNLOAD_HK"), (*) => startDownload(commandString), "On")
 
     ; Second hotkey (collect URLs).
-    Hotkey(readConfigFile("URL_COLLECT_HK"), (*) => saveSearchBarContentsToFile(), "Off")
+    Hotkey(readConfigFile("URL_COLLECT_HK"), (*) => saveSearchBarContentsToFile(), "On")
 
     ; Third hotkey (collect URLs from video thumbnail).
-    Hotkey(readConfigFile("THUMBNAIL_URL_COLLECT_HK"), (*) => saveVideoURLDirectlyToFile(), "Off")
+    Hotkey(readConfigFile("THUMBNAIL_URL_COLLECT_HK"), (*) => saveVideoURLDirectlyToFile(), "On")
 
     ; GUI hotkey (opens GUI).
     Hotkey(readConfigFile("MAIN_GUI_HK"), (*) => Hotkey_openMainGUI())

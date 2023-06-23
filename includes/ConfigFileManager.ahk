@@ -32,7 +32,7 @@ BLACKLIST_FILE_LOCATION := A_ScriptDir . "\files\YT_BLACKLIST.txt"
 ; Standard download path.
 DEFAULT_DOWNLOAD_PATH := A_ScriptDir . "\files\download"
 ; Stores which hotkeys are enabled / disabled via the GUI.
-HOTKEY_STATE_ARRAY := "[0, 0, 0, 0, 0, 0, 0]"
+HOTKEY_STATE_ARRAY := "[0, 0, 0, 0, 1, 1, 1]"
 ; Just a list of all standard hotkeys.
 DOWNLOAD_HK := "+^!D"
 URL_COLLECT_HK := "+^!S"
