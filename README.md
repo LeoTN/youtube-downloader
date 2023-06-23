@@ -3,7 +3,8 @@
   
 
 A simple AutoHotkey script which enables the user to select a list of YouTube video URLs and automatically download them on demand.
-
+**VERY IMPORTANT THIS VERSION MIGHT NOT BE DEVELOPED IN THE FUTURE !**
+**You can find the command line version here : https://github.com/LeoTN/yt-dlp-autohotkey-gui**
   
 
 **Manual**
@@ -50,9 +51,9 @@ A simple AutoHotkey script which enables the user to select a list of YouTube vi
 
   
 
-- Maybe improve GUI look and comfort.
+- ALL FEATURES ARE ON ICE FOR NOW. THIS VERSION MIGHT NOT BE DEVELOPED IN THE FUTURE !
 
-- Make the script more reliable, as it is still in development.
+- Maybe improve GUI look and comfort
 - Maybe add more customisation options.
 
 - Support for more browsers than Firefox in the far future.
