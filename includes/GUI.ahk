@@ -41,22 +41,33 @@ createMainGUI()
     fileMenu.SetIcon("&Reset...", "shell32.dll", 239)
 
     activeHotkeyMenu := Menu()
-    ; Still incomplete.
-    activeHotkeyMenu.Add("Terminate Script" . " -> " . expandHotkey(readConfigFile("TERMINATE_SCRIPT_HK")),
-        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Terminate Script" . " -> " .
+    activeHotkeyMenu.Add("Terminate Script → " . expandHotkey(readConfigFile("TERMINATE_SCRIPT_HK")),
+        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Terminate Script → " .
             expandHotkey(readConfigFile("TERMINATE_SCRIPT_HK")), 1), "+Radio")
 
-    activeHotkeyMenu.Add("Reload Script" . " -> " . expandHotkey(readConfigFile("RELOAD_SCRIPT_HK")),
-        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Reload Script" . " -> " .
+    activeHotkeyMenu.Add("Reload Script → " . expandHotkey(readConfigFile("RELOAD_SCRIPT_HK")),
+        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Reload Script → " .
             expandHotkey(readConfigFile("RELOAD_SCRIPT_HK")), 2), "+Radio")
 
-    activeHotkeyMenu.Add("Pause / Continue Script" . " -> " . expandHotkey(readConfigFile("PAUSE_CONTINUE_SCRIPT_HK")),
-        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Pause / Continue Script" . " -> " .
+    activeHotkeyMenu.Add("Pause / Continue Script → " . expandHotkey(readConfigFile("PAUSE_CONTINUE_SCRIPT_HK")),
+        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Pause / Continue Script → " .
             expandHotkey(readConfigFile("PAUSE_CONTINUE_SCRIPT_HK")), 3), "+Radio")
 
-    activeHotkeyMenu.Add("Clear URL File" . " -> " . expandHotkey(readConfigFile("CLEAR_URL_FILE_HK")),
-        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Clear URL File" . " -> " .
-            expandHotkey(readConfigFile("CLEAR_URL_FILE_HK")), 4), "+Radio")
+    activeHotkeyMenu.Add("Start Download → " . expandHotkey(readConfigFile("DOWNLOAD_HK")),
+        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Start Download → " .
+            expandHotkey(readConfigFile("DOWNLOAD_HK")), 4), "+Radio")
+
+    activeHotkeyMenu.Add("Collect URL Searchbar → " . expandHotkey(readConfigFile("URL_COLLECT_HK")),
+        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Collect URL Searchbar → " .
+            expandHotkey(readConfigFile("URL_COLLECT_HK")), 5), "+Radio")
+
+    activeHotkeyMenu.Add("Collect URL Thumbnail → " . expandHotkey(readConfigFile("THUMBNAIL_URL_COLLECT_HK")),
+        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Collect URL Thumbnail → " .
+            expandHotkey(readConfigFile("THUMBNAIL_URL_COLLECT_HK")), 6), "+Radio")
+
+    activeHotkeyMenu.Add("Clear URL File → " . expandHotkey(readConfigFile("CLEAR_URL_FILE_HK")),
+        (*) => GUI_ToggleCheck("activeHotkeyMenu", "Clear URL File → " .
+            expandHotkey(readConfigFile("CLEAR_URL_FILE_HK")), 7), "+Radio")
 
     activeHotkeyMenu.Add()
     activeHotkeyMenu.Add("Enable All", (*) => GUI_MenuCheckAll("activeHotkeyMenu"))
@@ -70,12 +81,15 @@ createMainGUI()
     optionsMenu.Add()
     optionsMenu.Add("Manage URL File", (*) => manageURLFile())
     optionsMenu.SetIcon("Manage URL File", "shell32.dll", 43)
+    optionsMenu.Add("Open Download Options GUI", (*) => Hotkey_openOptionsGUI())
+    optionsMenu.SetIcon("Open Download Options GUI", "shell32.dll", 123)
     optionsMenu.Add("Terminate Script", (*) => terminateScriptPrompt())
     optionsMenu.SetIcon("Terminate Script", "shell32.dll", 28)
     optionsMenu.Add("Reload Script", (*) => reloadScriptPrompt())
     optionsMenu.SetIcon("Reload Script", "shell32.dll", 207)
 
     helpMenu := Menu()
+    ; REMOVE
     helpMenu.Add("GitHub", (*) => Run("https://github.com/LeoTN/youtube-downloader-using-ahk#readme"))
 
     allMenus := MenuBar()
@@ -97,10 +111,8 @@ GUI SUPPORT FUNCTIONS
 */
 
 ; Runs a few commands when the script is executed.
-GUI_onInit()
+mainGUI_onInit()
 {
-    global youTubeBackGroundLocation := A_WorkingDir . "\files\YouTubeBackground.jpg"
-    FileInstall("files\YouTubeBackground.jpg", youTubeBackGroundLocation, 1)
     createMainGUI()
     GUI_ApplyCheckmarksFromConfigFile("activeHotkeyMenu")
 }
@@ -196,6 +208,7 @@ GUI_MenuCheckHandler(pMenuName := unset, pSubMenuPosition := unset, pBooleanStat
     }
     Return
 }
+
 ; Applies the checkmarks stored in the config file so that they become visible to the user in the GUI.
 GUI_ApplyCheckmarksFromConfigFile(pMenuName)
 {

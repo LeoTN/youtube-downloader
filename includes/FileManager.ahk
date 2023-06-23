@@ -121,7 +121,7 @@ readFile(pFileLocation, pBooleanCheckIfURL := false)
     }
     Catch
     {
-        MsgBox("The file does not exist !	`n`nreadFile() could not be executed properly", "Error", "O Icon! T3")
+        MsgBox("The file does not exist !	`n`nreadFile() could not be executed properly", "Error !", "O Icon! T3")
         Return
     }
 }
@@ -162,7 +162,7 @@ checkBlackListFile(pItemToCompare, pBooleanShowPrompt := true)
             }
             Catch
             {
-                MsgBox("Could not create file !	`n`nCheck the config file for a valid path.", "Error", "O Icon! T3")
+                MsgBox("Could not create file !	`n`nCheck the config file for a valid path.", "Error !", "O Icon! T3")
                 Reload()
             }
         }
@@ -193,7 +193,7 @@ checkBlackListFile(pItemToCompare, pBooleanShowPrompt := true)
             }
             Catch
             {
-                MsgBox("Could not create file !	`n`nNo one knows why.", "Error", "O Icon! T3")
+                MsgBox("Could not create file !	`n`nNo one knows why.", "Error !", "O Icon! T3")
                 Reload()
             }
         }
@@ -227,7 +227,7 @@ manageURLFile()
         }
         Catch
         {
-            MsgBox("The file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
+            MsgBox("The file does not exist !	`n`nIt was probably already cleared.", "Error !", "O Icon! T3")
             Reload()
         }
 

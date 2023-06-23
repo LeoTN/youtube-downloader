@@ -3,363 +3,440 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-; Beginning of the download related functions.
+global commandString := ""
 
-userStartDownload()
+createDownloadOptionsGUI()
 {
-    If (FileExist(readConfigFile("URL_FILE_LOCATION")))
-    {
-        openDownloadPage()
-        ; In case someone decides to download as MP3 by default.
-        If (readConfigFile("DOWNLOAD_FORMAT") = "MP3")
-        {
-            setDownloadFormat("MP3")
-        }
-        i := getCurrentURL(true, true)
-        Loop (i)
-        {
-            ; Waits for startDownload() to finish.
-            result_1 := unset
-            result_1 := startDownload(getCurrentURL(false))
-            while (IsSet(result_1) = false)
-            {
-                Sleep(500)
-            }
+    Global
+    downloadOptionsGUI := Gui(, "Download Options")
 
-            ; Checks for common errors.
-            result_2 := unset
-            result_2 := handleErrors()
-            while (IsSet(result_2) = false)
-            {
-                Sleep(500)
-            }
-            ; This means that there was an error found.
-            If (result_2 = true)
-            {
-                Send("{Browser_Refresh}")
-                Sleep(1000)
-            }
-        }
-    }
-    Else
-    {
-        saveSearchBarContentsToFile()
-        Sleep(200)
-        userStartDownload()
-    }
+    generalGroupbox := downloadOptionsGUI.Add("GroupBox", "w300 R3.2", "General Options")
+
+    ignoreErrorsCheckbox := downloadOptionsGUI.Add("Checkbox", "xp+10 yp+20", "Ignore errors")
+    abortOnErrorCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+20", "Abort on error")
+    ignoreAllOptionsCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+20", "Ignore all options")
+    hideDownloadCommandPromptCheckbox := downloadOptionsGUI.Add("Checkbox", "xp+110 yp-40", "Download in a background task")
+    askForDownloadConfirmationCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+20", "Ask for download confirmation")
+    enableFastDownloadModeCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+20", "Fast download mode")
+
+    downloadGroupbox := downloadOptionsGUI.Add("GroupBox", "xp-120 yp+20 w394 R9.3", "Download Options")
+
+    limitDownloadRateText1 := downloadOptionsGUI.Add("Text", "xp+10 yp+20", "Maximum download rate `n in MB per second.")
+    limitDownloadRateEdit := downloadOptionsGUI.Add("Edit", "yp+30")
+    limitDownloadRateUpDown := downloadOptionsGUI.Add("UpDown")
+    limitDownloadRateText2 := downloadOptionsGUI.Add("Text", "yp+25", "Enter 0 for no limitations.")
+    higherRetryAmountCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+20", "Increase retry amount")
+    downloadVideoDescriptionCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+20 Checked", "Download video description")
+    downloadVideoCommentsCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+20", "Download video commentary section")
+    downloadVideoThumbnail := downloadOptionsGUI.Add("Checkbox", "yp+20 Checked", "Download video thumbnail")
+    downloadVideoSubtitles := downloadOptionsGUI.Add("Checkbox", "yp+20", "Download the video's subtitles")
+
+    chooseVideoFormatText := downloadOptionsGUI.Add("Text", "xp+250 yp-155", "Desired video format")
+    downloadVideoFormatArray := ["mp4", "webm", "avi", "flv", "mkv", "mov"]
+    chooseVideoFormatDropDownList := downloadOptionsGUI.Add("DropDownList", "y+17 Choose1", downloadVideoFormatArray)
+
+    downloadAudioOnlyCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+27.5", "Download audio only")
+    downloadAudioFormatArray := ["mp3", "wav", "m4a", "flac", "aac", "alac", "opus", "vorbis"]
+    chooseAudioFormatDropDownList := downloadOptionsGUI.Add("DropDownList", "y+17 Choose1", downloadAudioFormatArray)
+
+    alwaysHighestQualityBothCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+27.5 Checked", "Balance quality")
+    prioritiseVideoQualityCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+20", "Prefer video quality")
+    prioritiseAudioQualityCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+20", "Prefer audio quality")
+
+    fileSystemGroupbox := downloadOptionsGUI.Add("GroupBox", "xp-260 yp+22.5 w260 R5.2", "File Management")
+
+    useTextFileForURLsCheckbox := downloadOptionsGUI.Add("Checkbox", "xp+10 yp+20 Checked", "Use collected URLs")
+    customURLInputEdit := downloadOptionsGUI.Add("Edit", "yp+20 w240 Disabled", "Currently downloading collected URLs.")
+    useDefaultDownloadLocationCheckbox := downloadOptionsGUI.Add("Checkbox", "yp+30 Checked", "Use default download path")
+    customDownloadLocation := downloadOptionsGUI.Add("Edit", "yp+20 w240 Disabled", "Currently downloading into default directory.")
+
+    startDownloadGroupbox := downloadOptionsGUI.Add("GroupBox", "xp+265 yp-90 w205 R5.2", "Start Downloading")
+
+    startDownloadButton := downloadOptionsGUI.Add("Button", "xp+10 yp+20 R1", "Start downloading...")
+    cancelDownloadButton := downloadOptionsGUI.Add("Button", "xp+120 w65", "Cancel")
+    terminateScriptAfterDownloadCheckbox := downloadOptionsGUI.Add("Checkbox", "xp-120 yp+30", "Terminate script after downloading")
+
+    ignoreErrorsCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    abortOnErrorCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    ignoreAllOptionsCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    hideDownloadCommandPromptCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    askForDownloadConfirmationCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    enableFastDownloadModeCheckbox.OnEvent("Click", (*) => handleGUI_Checkbox_fastDownload())
+    higherRetryAmountCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    downloadVideoDescriptionCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    downloadVideoCommentsCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    downloadVideoThumbnail.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    downloadVideoSubtitles.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    useTextFileForURLsCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    useDefaultDownloadLocationCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    downloadAudioOnlyCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    alwaysHighestQualityBothCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    prioritiseVideoQualityCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    prioritiseAudioQualityCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+    terminateScriptAfterDownloadCheckbox.OnEvent("Click", (*) => handleGUI_Checkboxes())
+
+    limitDownloadRateEdit.OnEvent("Change", (*) => handleGUI_InputFields())
+    customURLInputEdit.OnEvent("Change", (*) => handleGUI_InputFields())
+    chooseVideoFormatDropDownList.OnEvent("Change", (*) => handleGUI_InputFields())
+    chooseAudioFormatDropDownList.OnEvent("Change", (*) => handleGUI_InputFields())
+
+    startDownloadButton.OnEvent("Click", (*) => startDownload(commandString))
+    cancelDownloadButton.OnEvent("Click", (*) => cancelDownload())
 }
 
-; Starts the download and returns true if an URL download has started successfully.
-startDownload(pURL)
+; Runs a few commands when the script is executed.
+optionsGUI_onInit()
 {
-    If (findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox") = true)
-    {
-        URL := pURL
-        ; Refresh the page so that every button is on it's exact position.
-        WinActivate(firefoxWindow)
-        Sleep(100)
-        ; Focus text box.
-        If (findTextBar() = true)
-        {
-            Sleep(readConfigFile("WAIT_TIME"))
-            Send(URL)
-            Sleep(readConfigFile("WAIT_TIME"))
-            ; Click start button.
-            If (findStartButton() = true)
-            {
-                ; Wait for the website to process.
-                If (waitForDownloadButton() = true)
-                {
-                    Sleep(readConfigFile("WAIT_TIME"))
-                    If (findDownloadButton() = true)
-                    {
-                        If (getCurrentURL(true) <= 0)
-                        {
-                            ; Ensures that the download has started before sending close command to the browser.
-                            Sleep(3000)
-                            result := MsgBox("Would you like to close the browser instance now?", "Download completed !", "36 T5")
-
-                            If (result = "Yes" || result = "Timeout")
-                            {
-                                WinClose(firefoxWindow)
-                                manageURLFile()
-                                Reload()
-                            }
-                            Else If (result = "No")
-                            {
-                                findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
-                                manageURLFile()
-                                Reload()
-                            }
-                        }
-                        Else
-                        {
-                            Return true
-                        }
-                    }
-                    Else
-                    {
-                        Return false
-                    }
-                }
-                Else
-                {
-                    Return false
-                }
-            }
-            Else
-            {
-                Return false
-            }
-        }
-        Else
-        {
-            Return false
-        }
-    }
-    Else
-    {
-        openDownloadPage()
-    }
+    createDownloadOptionsGUI()
+    buildCommandString()
 }
 
-; If necessary the function will open a new firefox window and the download tab within it.
-openDownloadPage()
+; Use embed options for later !!!
+
+cancelDownload()
 {
-    firefoxLocation := A_ProgramFiles . "\Mozilla Firefox\firefox.exe"
-    ; Just a random number
-    static firefoxID := 123456789
-    global firefoxWindow
-    If (!WinExist("ahk_id " . firefoxID))
+    result := MsgBox("Do you really want to cancel the ongoing download process ?"
+        , "Cancel downloading", "YN Icon! 4096 T10")
+
+    If (result = "Yes")
     {
-        Run(firefoxLocation)
-        Sleep(readConfigFile("WAIT_TIME"))
-        firefoxID := WinGetID("A")
-        firefoxWindow := "ahk_id " . firefoxID
-    }
-    If (findBrowserTab("YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox") = false)
-    {
-        ; Wait time depends on the system speed.
-        Sleep(readConfigFile("WAIT_TIME"))
         Try
         {
-            Run("https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist")
-        }
-        Catch
-        {
-            Sleep(2000)
-            Run("https://de.onlinevideoconverter.pro/67/youtube-video-downloader?utm_source=pocket_mylist")
+            ProcessClose(("ahk_pid " . consoleId))
+            WinClose(("ahk_pid " . consoleId))
         }
     }
-    ; Waits for the download tab to appear.
-    w := 1
-    While (w = 1)
-    {
-        currentTabName := WinGetTitle(firefoxWindow)
-        If (currentTabName = "YouTube Downloader Kostenlos Online❤️ - YouTube-Videos Herunterladen – Mozilla Firefox")
-        {
-            Sleep(readConfigFile("WAIT_TIME"))
-            Break
-        }
-    }
-    Return true
+    Return
 }
 
-; Multiply timer value times sleep duration for the amount in seconds.
-; Currently not used.
-wait8SecondsCanBeCancelled()
+; Function to react to changes made to any checkbox.
+handleGUI_Checkboxes()
 {
-    timer := 800
-    While (timer >= 0)
-    {
-        isDown := GetKeyState("Control")
-        If (isDown = true)
-        {
-            Return true
-        }
-        Else
-        {
-            timer := timer - 1
-            Sleep(10)
-        }
-    }
-    Return false
-}
+    global commandString
 
-; Waits for the download button to appear after the site has finished loading.
-; Returns true, if the button is available and false after a set timeout timer.
-waitForDownloadButton()
-{
-    WinActivate(firefoxWindow)
-    ; Enter number in seconds.
-    timeout := 30
-    w := 1
-    While (w = 1)
+    Switch (ignoreErrorsCheckbox.Value)
     {
-        If (getPixelColorMouse(1248, 543, 0xF07818) = true)
+        Case 0:
         {
-            Sleep(10)
-            Return true
+            ; Do not ignore most errors while downloading.
+            abortOnErrorCheckbox.Opt("-Disabled")
         }
-        Else If (timeout <= 0)
+        Case 1:
         {
-            Return false
+            ; Do ignore most errors while downloading.
+            abortOnErrorCheckbox.Opt("+Disabled")
+            commandString .= "--ignore-errors "
         }
-        Sleep(1000)
-        timeout := timeout - 1
     }
-}
-
-; Enter the tab name you want to focus and as the second parameter wether you want to close it or not.
-; The parameter parseAmount defines how many tabs the function will search before returning.
-; forceFullParce declarates if you want to execute all parseAmount times or not. May lead to flashing browser screen !
-; Returns true if a matching tab was found.
-findBrowserTab(pTabName, pBooleanClose := false, pParseAmount := 20, pForceFullParse := false)
-{
-    ; Searches if the tab name includes parts of the firefox window name.
-    If (InStr(pTabName, " – Mozilla Firefox", true))
+    Switch (abortOnErrorCheckbox.Value)
     {
-        tabName := pTabName
-    }
-    ; If the user only enters the "real" tab name without the firefox window name parts,
-    ; they will be added afterwards so that the function runs properly.
-    Else
-    {
-        tabName := pTabName . " – Mozilla Firefox"
-    }
-    booleanClose := pBooleanClose
-    parseAmount := pParseAmount
-    forceFullParse := pForceFullParse
-    WinActivate(firefoxWindow)
-    ; Currently only for firefox !
-    originTab := WinGetTitle(firefoxWindow)
-    ; Parse through tabs and find the one with matching title.
-    Loop (parseAmount)
-    {
-        If (WinActive(firefoxWindow))
+        Case 0:
         {
-            currentTabName := WinGetTitle(firefoxWindow)
-            ; This condition checks if the loop already parsed every tab by comparing it to the very first tab.
-            ; Once it reaches the origin tab the function will break the loop to stop parsing a second time.
-            If (forceFullParse = false)
+            ; Do not abort on errors.
+            ignoreErrorsCheckbox.Opt("-Disabled")
+            commandString .= "--no-abort-on-error "
+        }
+        Case 1:
+        {
+            ; Do abort on errors.
+            ignoreErrorsCheckbox.Opt("+Disabled")
+            commandString .= "--abort-on-error "
+        }
+    }
+    Switch (ignoreAllOptionsCheckbox.Value)
+    {
+        Case 0:
+        {
+            ; Do not ignore the config file.
+        }
+        Case 1:
+        {
+            ; Do ignore the config file.
+        }
+    }
+    Switch (askForDownloadConfirmationCheckbox.Value)
+    {
+        Case 0:
+        {
+            ; Do not show a confirmation prompt before downloading.
+        }
+        Case 1:
+        {
+            ; Show a confirmation prompt before downloading.
+        }
+    }
+    Switch (higherRetryAmountCheckbox.Value)
+    {
+        Case 1:
+        {
+            ; Increase the maximum download retry amount up to 30.
+            commandString .= "--retries 30 "
+        }
+    }
+    Switch (downloadVideoDescriptionCheckbox.Value)
+    {
+        Case 0:
+        {
+            ; Do not download the video description.
+            commandString .= "--no-write-description "
+        }
+        Case 1:
+        {
+            ; Add the video description to a .description file.
+            If (enableFastDownloadModeCheckbox.Value != 1)
             {
-                If (originTab = currentTabName && A_Index != 1)
+                commandString .= "--write-description "
+            }
+        }
+    }
+    Switch (downloadVideoCommentsCheckbox.Value)
+    {
+        Case 0:
+        {
+            ; Do not download the video's comment section.
+            commandString .= "--no-write-comments "
+        }
+        Case 1:
+        {
+            ; Download the video 's comment section.
+            If (enableFastDownloadModeCheckbox.Value != 1)
+            {
+                commandString .= "--write-comments "
+            }
+        }
+    }
+    Switch (downloadVideoThumbnail.Value)
+    {
+        Case 1:
+        {
+            ; Download the video thumbnail and add it to the downloaded video.
+            If (enableFastDownloadModeCheckbox.Value != 1)
+            {
+                commandString .= "--write-thumbnail "
+                commandString .= "--embed-thumbnail "
+            }
+        }
+    }
+    Switch (downloadVideoSubtitles.Value)
+    {
+        Case 1:
+        {
+            ; Download the video's subtitles and embed tem into the downloaded video.
+            If (enableFastDownloadModeCheckbox.Value != 1)
+            {
+                commandString .= "--write-description "
+                commandString .= "--embed-subs "
+            }
+        }
+    }
+    Switch (useTextFileForURLsCheckbox.Value)
+    {
+        Case 0:
+        {
+            ; Allow the user to download his own URL.
+            customURLInputEdit.Opt("-Disabled")
+            If (customURLInputEdit.Value = "Currently downloading collected URLs.")
+            {
+                customURLInputEdit.Value := "You can now enter your own URL."
+            }
+            commandString .= "--no-batch-file "
+            commandString .= customURLInputEdit.Value . " "
+        }
+        Case 1:
+        {
+            ; Download selected URLs form the text file.
+            customURLInputEdit.Opt("+Disabled")
+            customURLInputEdit.Value := "Currently downloading collected URLs."
+            ; Gives the .txt file with all youtube URLs to yt-dlp.
+            commandString .= "--batch-file " . readConfigFile("URL_FILE_LOCATION") . " "
+        }
+    }
+    Switch (useDefaultDownloadLocationCheckbox.Value)
+    {
+        Case 0:
+        {
+            ; Allows the user to select a custom download path.
+            customDownloadLocation.Opt("-Disabled")
+            ; Makes sure that a user input will not be overwritten.
+            If (customDownloadLocation.Value = "Currently downloading into default directory.")
+            {
+                customDownloadLocation.Value := "You can now specify your own download path."
+            }
+            commandString .= "--paths " . customDownloadLocation.Value . " "
+        }
+        Case 1:
+        {
+            ; Keeps the default download directory.
+            customDownloadLocation.Opt("+Disabled")
+            customDownloadLocation.Value := "Currently downloading into default directory."
+            commandString .= "--paths " . readConfigFile("DEFAULT_DOWNLOAD_PATH") . " "
+        }
+    }
+    Switch (downloadAudioOnlyCheckbox.Value)
+    {
+        Case 0:
+        {
+            ; Downloads the video with audio.
+            If (enableFastDownloadModeCheckbox.Value != 1)
+            {
+                chooseVideoFormatDropDownList.Opt("-Disabled")
+            }
+            chooseAudioFormatDropDownList.Opt("+Disabled")
+        }
+        Case 1:
+        {
+            ; Only extracts the audio and creates the desired audio file type.
+            chooseVideoFormatDropDownList.Opt("+Disabled")
+            chooseAudioFormatDropDownList.Opt("-Disabled")
+            If (enableFastDownloadModeCheckbox.Value = 1)
+            {
+                chooseAudioFormatDropDownList.Opt("-Disabled")
+            }
+            commandString .= "--extract-audio "
+            commandString .= '--audio-format "' . downloadAudioFormatArray[chooseAudioFormatDropDownList.Value] . '" '
+        }
+    }
+    Switch (alwaysHighestQualityBothCheckbox.Value)
+    {
+        Case 0:
+        {
+            ; Let the user choose a prefered option.
+            prioritiseVideoQualityCheckbox.Opt("-Disabled")
+            prioritiseAudioQualityCheckbox.Opt("-Disabled")
+        }
+        Case 1:
+        {
+            ; Try to choose the best audio quality both audio and video.
+            prioritiseVideoQualityCheckbox.Opt("+Disabled")
+            prioritiseAudioQualityCheckbox.Opt("+Disabled")
+            If (enableFastDownloadModeCheckbox.Value != 1)
+            {
+                commandString .= '-f "bestvideo+bestaudio" '
+            }
+        }
+    }
+    If (alwaysHighestQualityBothCheckbox.Value != 1)
+    {
+        Switch (prioritiseVideoQualityCheckbox.Value)
+        {
+            Case 0:
+            {
+                ; Let the user choose a prefered option.
+                alwaysHighestQualityBothCheckbox.Opt("-Disabled")
+                prioritiseAudioQualityCheckbox.Opt("-Disabled")
+            }
+            Case 1:
+            {
+                ; Try to choose the best audio quality both audio and video.
+                alwaysHighestQualityBothCheckbox.Opt("+Disabled")
+                prioritiseAudioQualityCheckbox.Opt("+Disabled")
+                If (enableFastDownloadModeCheckbox.Value != 1)
                 {
-                    Break
+                    commandString .= '-f "bestvideo" '
                 }
             }
-            If (currentTabName = tabName && booleanClose = true)
-            {
-                Send("^{w}")
-                Return true
-            }
-            Else If (currentTabName = tabName && booleanClose = false)
-            {
-                Return true
-            }
-            Else
-            {
-                Send("^{Tab}")
-                Sleep(50)
-            }
         }
-        Else
+        If (prioritiseVideoQualityCheckbox.Value != 1)
         {
-            WinActivate(firefoxWindow)
+            Switch (prioritiseAudioQualityCheckbox.Value)
+            {
+                Case 0:
+                {
+                    ; Let the user choose a prefered option.
+                    alwaysHighestQualityBothCheckbox.Opt("-Disabled")
+                    prioritiseVideoQualityCheckbox.Opt("-Disabled")
+                }
+                Case 1:
+                {
+                    ; Try to choose the best audio quality both audio and video.
+                    alwaysHighestQualityBothCheckbox.Opt("+Disabled")
+                    prioritiseVideoQualityCheckbox.Opt("+Disabled")
+                    If (enableFastDownloadModeCheckbox.Value != 1)
+                    {
+                        commandString .= '-f "bestaudio" '
+                    }
+                }
+            }
         }
     }
-    Return false
 }
 
-findDownloadButton()
+; Has to be excluded to avoid disabeling options everytime handleGUI_Checkboxes() is called.
+handleGUI_Checkbox_fastDownload()
 {
-    WinActivate(firefoxWindow)
-    ; 0xF07818 is the color code of the orange button.
-    If (getPixelColorMouse(1248, 543, 0xF07818) = true)
+    Switch (enableFastDownloadModeCheckbox.Value)
     {
-        Send("{Click}")
-        Return true
-    }
-    Else
-    {
-        Return false
+        Case 0:
+        {
+            ; Keep every option available.
+            limitDownloadRateEdit.Opt("-Disabled")
+            downloadVideoDescriptionCheckbox.Opt("-Disabled")
+            downloadVideoCommentsCheckbox.Opt("-Disabled")
+            downloadVideoThumbnail.Opt("-Disabled")
+            downloadVideoSubtitles.Opt("-Disabled")
+            chooseVideoFormatDropDownList.Opt("-Disabled")
+            alwaysHighestQualityBothCheckbox.Opt("-Disabled")
+            prioritiseVideoQualityCheckbox.Opt("-Disabled")
+            prioritiseAudioQualityCheckbox.Opt("-Disabled")
+            chooseAudioFormatDropDownList.Opt("-Disabled")
+            If (downloadAudioOnlyCheckbox.Value = 0)
+            {
+                chooseAudioFormatDropDownList.Opt("+Disabled")
+            }
+        }
+        Case 1:
+        {
+            ; Disable all time consuming download variants.
+            limitDownloadRateEdit.Opt("+Disabled")
+            downloadVideoDescriptionCheckbox.Opt("+Disabled")
+            downloadVideoCommentsCheckbox.Opt("+Disabled")
+            downloadVideoThumbnail.Opt("+Disabled")
+            downloadVideoSubtitles.Opt("+Disabled")
+            chooseVideoFormatDropDownList.Opt("+Disabled")
+            alwaysHighestQualityBothCheckbox.Opt("+Disabled")
+            prioritiseVideoQualityCheckbox.Opt("+Disabled")
+            prioritiseAudioQualityCheckbox.Opt("+Disabled")
+            chooseAudioFormatDropDownList.Opt("+Disabled")
+            ; In case the user wants to download music fast.
+            If (downloadAudioOnlyCheckbox.Value = 1)
+            {
+                chooseAudioFormatDropDownList.Opt("-Disabled")
+            }
+        }
     }
 }
-
-findStartButton()
+; Function that deals with changes made to any input field.
+handleGUI_InputFields()
 {
-    WinActivate(firefoxWindow)
-    ; 0xF07818 is the color code of the orange button.
-    If (getPixelColorMouse(950, 348, 0xF07818) = true)
+    global commandString
+    If (limitDownloadRateEdit.Value != 0)
     {
-        Send("{Click}")
-        Return true
+        If (limitDownloadRateEdit.Value > 100)
+        {
+            limitDownloadRateEdit.Value := 100
+        }
+        ; Limit the download rate to a maximum value in Megabytes per second.
+        If (enableFastDownloadModeCheckbox.Value != 1)
+        {
+            commandString .= "--limit-rate " . limitDownloadRateEdit.Value . "MB "
+        }
     }
-    Else
+    ; Handles the desired download formats.
+    If (enableFastDownloadModeCheckbox.Value != 1 && downloadAudioOnlyCheckbox.Value != 1)
     {
-        Return false
-    }
-}
-
-findTextBar()
-{
-    WinActivate(firefoxWindow)
-    ; 0xFFFFFF is the color code of the white text box.
-    Sleep(50)
-    MouseMove(1200, 235)
-    Sleep(100)
-    Send("{Click}")
-    Sleep(50)
-    Send("^{a}")
-    Sleep(50)
-    Send("{Backspace}")
-    Sleep(50)
-    Return true
-}
-
-; Enter the desired format in caps (e.g. "MP3").
-setDownloadFormat(pFormat)
-{
-    format := pFormat
-
-    If (format = "MP3")
-    {
-        WinActivate(firefoxWindow)
-        Sleep(10)
-        MouseMove(1200, 290)
-        Send("{Click}")
-        Sleep(100)
-        MouseMove(650, 335)
-        Send("{Click}")
-    }
-    Else If (format = "MP4")
-    {
-        WinActivate(firefoxWindow)
-        Sleep(10)
-        MouseMove(1200, 290)
-        Send("{Click}")
-        Sleep(100)
-        MouseMove(795, 335)
-        Send("{Click}")
-    }
-    Else
-    {
-        MsgBox("Could execute setDownloadFormat() properly !`nCheck the config file for a valid format at : `n "
-            . configVariableNameArray[6], "Error", "O Icon! T10")
+        commandString .= '--remux-video "' . downloadVideoFormatArray[chooseVideoFormatDropDownList.Value] . '" '
     }
 }
 
-; Enter true to toggle flipflop.
-toggleDownloadFormat()
+; This function parses through all values of the GUI and builds a command string
+; which bill be given to the yt-dlp command prompt.
+; Returns the string to it's caller.
+buildCommandString()
 {
-    static flipflop := false
-    If (flipflop = true)
-    {
-        flipflop := !flipflop
-        setDownloadFormat("MP4")
-    }
-    Else If (flipflop = false)
-    {
-        setDownloadFormat("MP3")
-    }
+    global commandString := "yt-dlp "
+    handleGUI_Checkboxes()
+    handleGUI_InputFields()
+    ; Adds the ffmpeg location for the script to remux / extract audio etc.
+    commandString .= "--ffmpeg-location " . ffmpegLocation . " "
+    Return commandString
 }

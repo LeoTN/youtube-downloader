@@ -1,5 +1,5 @@
-*.exe
-.vscode/launch.json
-files/
-# Will be changed in the future
-FireFoxAPI.ahk
+AutoDownloadYouTubeVideo.exe
+.vscode/
+files/*.ini
+files/*.txt
+files/download

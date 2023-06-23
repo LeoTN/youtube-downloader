@@ -41,18 +41,18 @@ registerHotkeys()
     ; Beginning of all standard script hotkeys.
 
     ; Main hotkey (start download).
-    Hotkey(readConfigFile("DOWNLOAD_HK"), (*) => userStartDownload())
+    Hotkey(readConfigFile("DOWNLOAD_HK"), (*) => startDownload(commandString), "Off")
 
     ; Second hotkey (collect URLs).
-    Hotkey(readConfigFile("URL_COLLECT_HK"), (*) => saveSearchBarContentsToFile())
+    Hotkey(readConfigFile("URL_COLLECT_HK"), (*) => saveSearchBarContentsToFile(), "Off")
 
     ; Third hotkey (collect URLs from video thumbnail).
-    Hotkey(readConfigFile("THUMBNAIL_URL_COLLECT_HK"), (*) => saveVideoURLDirectlyToFile())
+    Hotkey(readConfigFile("THUMBNAIL_URL_COLLECT_HK"), (*) => saveVideoURLDirectlyToFile(), "Off")
 
     ; GUI hotkey (opens GUI).
-    Hotkey(readConfigFile("GUI_HK"), (*) => Hotkey_openGUI())
-    ; Hotkey support function to open the script GUI.
-
+    Hotkey(readConfigFile("MAIN_GUI_HK"), (*) => Hotkey_openMainGUI())
+    ; Hotkey to open Download Options GUI.
+    Hotkey(readConfigFile("OPTIONS_GUI_HK"), (*) => Hotkey_openOptionsGUI())
     ; Hotkey to termniate the script.
     Hotkey(readConfigFile("TERMINATE_SCRIPT_HK"), (*) => terminateScriptPrompt(), "Off")
 
@@ -66,8 +66,8 @@ registerHotkeys()
     Hotkey(readConfigFile("CLEAR_URL_FILE_HK"), (*) => clearURLFile(), "Off")
 }
 
-
-Hotkey_openGUI()
+; Hotkey support function to open the script GUI.
+Hotkey_openMainGUI()
 {
     static flipflop := true
     If (!WinExist("ahk_id " . mainGUI.Hwnd))
@@ -76,10 +76,36 @@ Hotkey_openGUI()
         flipflop := false
         Return
     }
-    If (flipflop = false)
+    Else If (flipflop = false && WinActive("ahk_id " . mainGUI.Hwnd))
     {
         mainGUI.Hide()
         flipflop := true
+    }
+    Else
+    {
+        WinActivate("ahk_id " . mainGUI.Hwnd)
+    }
+    Return
+}
+
+; Hotkey support function to open the script download options GUI.
+Hotkey_openOptionsGUI()
+{
+    static flipflop := true
+    If (!WinExist("ahk_id " . downloadOptionsGUI.Hwnd))
+    {
+        downloadOptionsGUI.Show("w500 h405")
+        flipflop := false
+        Return
+    }
+    Else If (flipflop = false && WinActive("ahk_id " . downloadOptionsGUI.Hwnd))
+    {
+        downloadOptionsGUI.Hide()
+        flipflop := true
+    }
+    Else
+    {
+        WinActivate("ahk_id " . downloadOptionsGUI.Hwnd)
     }
     Return
 }
@@ -89,13 +115,109 @@ FUNCTION SECTION
 -------------------------------------------------
 */
 
+; Important function which executes the built command string by pasting it into the console.
+startDownload(pCommandString, pBooleanSilent := hideDownloadCommandPromptCheckbox.Value)
+{
+    global consoleId
+    stringToExecute := pCommandString
+    booleanSilent := pBooleanSilent
+
+    If (booleanSilent = 1)
+    {
+        ; Execute the command line command and wait for it to be finished.
+        RunWait(A_ComSpec " /c " . stringToExecute, , "Hide")
+    }
+    Else
+    {
+        ; Enables the user to access the command and to review potential errors thrown by yt-dlp.
+        Run(A_ComSpec, , , &consoleId)
+        WinWaitActive("ahk_pid " . consoleId)
+        If (WinActive("ahk_pid " . consoleId))
+        {
+            Send(stringToExecute)
+            Sleep(50)
+            Send("{Enter}")
+        }
+        Else
+        {
+            WinActivate("ahk_pid " . consoleId)
+            Sleep(100)
+            Send(stringToExecute)
+            Sleep(50)
+            Send("{Enter}")
+        }
+        Sleep(1000)
+    }
+}
+
+; Enter true for the currentArrays length or false to receive the item in the array.
+; The second optional boolean defines wether you want to create the currentURL_Array or not.
+getCurrentURL(pBooleanGetLength := false, pBooleanCreateArray := false)
+{
+    booleanGetLength := pBooleanGetLength
+    booleanCreateArray := pBooleanCreateArray
+    static tmpArray := [""]
+    static currentURL_Array := [""]
+    If (booleanCreateArray = true)
+    {
+        currentURL_Array := readFile(readConfigFile("URL_FILE_LOCATION"), true)
+    }
+    If (booleanGetLength = true)
+    {
+        Return currentURL_Array.Length
+    }
+    Else If (getCurrentURL_DownloadSuccess(false) = true)
+    {
+        If (currentURL_Array.Length >= 1 && booleanGetLength = false)
+        {
+            tmpArray[1] := currentURL_Array.Pop()
+            ; Checks if the item is empty inside the URLarray.
+            If (tmpArray[1] = "")
+            {
+                tmpArray[1] := currentURL_Array.Pop()
+                Return tmpArray[1]
+            }
+            Else
+            {
+                Return tmpArray[1]
+            }
+        }
+        Else
+        {
+            Return
+        }
+    }
+    ; Returns the last content of the tmpArray (most likely because download failed).
+    Else If (getCurrentURL_DownloadSuccess(false) = false)
+    {
+        getCurrentURL_DownloadSuccess(true)
+        Return tmpArray[1]
+    }
+}
+
+; getCurrentURL() support function.
+; If the download fails, you have to call the getCurrentURL function again, but it would have deleted one link even
+; though it was never downloaded.
+; This function prevents this error from happening, so that the seemingly deleted link will be reatached to the currentURL_Array.
+; Enter true, to trigger the flipflop or false to get the last state.
+getCurrentURL_DownloadSuccess(pBoolean)
+{
+    static flipflop := true
+    boolean := pBoolean
+    If (boolean = true)
+    {
+        flipflop := !flipflop
+    }
+    Return flipflop
+}
+
 ; Works together with GUI_MenuCheckHandler() to enable / disable certain hotkeys depending on
 ; the checkmark array generated by the script GUI.
 toggleHotkey(pStateArray)
 {
     stateArray := pStateArray
     ; This array will be manipulated depending on the values in the array above.
-    static onOffArray := ["On", "On", "On", "On"]
+    static onOffArray := ["On", "On", "On", "On", "On", "On", "On"]
 
     Loop (stateArray.Length)
     {
@@ -113,7 +235,10 @@ toggleHotkey(pStateArray)
     Hotkey(readConfigFile("TERMINATE_SCRIPT_HK"), (*) => terminateScriptPrompt(), onOffArray[1])
     Hotkey(readConfigFile("RELOAD_SCRIPT_HK"), (*) => reloadScriptPrompt(), onOffArray[2])
     Hotkey(readConfigFile("PAUSE_CONTINUE_SCRIPT_HK"), (*) => MsgBox("Not implemented yet"), onOffArray[3])
-    Hotkey(readConfigFile("CLEAR_URL_FILE_HK"), (*) => clearURLFile(), onOffArray[4])
+    Hotkey(readConfigFile("DOWNLOAD_HK"), (*) => startDownload(commandString), onOffArray[4])
+    Hotkey(readConfigFile("URL_COLLECT_HK"), (*) => saveSearchBarContentsToFile(), onOffArray[5])
+    Hotkey(readConfigFile("THUMBNAIL_URL_COLLECT_HK"), (*) => saveVideoURLDirectlyToFile(), onOffArray[6])
+    Hotkey(readConfigFile("CLEAR_URL_FILE_HK"), (*) => clearURLFile(), onOffArray[7])
 }
 
 clearURLFile()
@@ -124,7 +249,7 @@ clearURLFile()
     }
     Else
     {
-        MsgBox("The  URL file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
+        MsgBox("The  URL file does not exist !	`n`nIt was probably already cleared.", "Error !", "O Icon! T3")
     }
     Return
 }
@@ -144,7 +269,7 @@ openURLFile()
     }
     Catch
     {
-        MsgBox("The URL file does not exist !	`n`nIt was probably already cleared.", "Error", "O Icon! T3")
+        MsgBox("The URL file does not exist !	`n`nIt was probably already cleared.", "Error !", "O Icon! T3")
     }
     Return
 }
@@ -163,7 +288,7 @@ openURLBackUpFile()
     }
     Catch
     {
-        MsgBox("The URL backup file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
+        MsgBox("The URL backup file does not exist !	`n`nIt was probably not generated yet.", "Error !", "O Icon! T3")
     }
     Return
 }
@@ -220,7 +345,7 @@ openURLBlacklistFile(pBooleanShowPrompt := false)
     }
     Catch
     {
-        MsgBox("The URL blacklist file does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
+        MsgBox("The URL blacklist file does not exist !	`n`nIt was probably not generated yet.", "Error !", "O Icon! T3")
     }
     Return
 }
@@ -246,7 +371,7 @@ openConfigFile()
     }
     Catch
     {
-        MsgBox("The script's config file does not exist !	`n`nA fatal error has occured.", "Error", "O Icon! T3")
+        MsgBox("The script's config file does not exist !	`n`nA fatal error has occured.", "Error !", "O Icon! T3")
     }
     Return
 }
@@ -311,20 +436,9 @@ deleteFilePrompt(pFileName)
             }
             Else
             {
-                MsgBox("The " . fileName . " does not exist !	`n`nIt was probably not generated yet.", "Error", "O Icon! T3")
+                MsgBox("The " . fileName . " does not exist !	`n`nIt was probably not generated yet.", "Error !", "O Icon! T3")
             }
         }
-    }
-    Return
-}
-
-changeDownloadFormatPrompt()
-{
-    result := MsgBox("Change format?", "Format change ", "OC Icon? T5")
-
-    If (result = "OK")
-    {
-        toggleDownloadFormat()
     }
     Return
 }
@@ -422,6 +536,7 @@ terminateScriptPrompt()
         }
         textField.Text := "The script has been terminated."
         Sleep(100)
+        ExitApp()
         ExitApp()
         Return
     }

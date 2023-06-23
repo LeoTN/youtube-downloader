@@ -3,9 +3,6 @@ SendMode "Input"
 CoordMode "Mouse", "Client"
 #Warn Unreachable, Off
 
-; Makes sure every function can open the firefox download instance. Receives an actual string in openDownloadPage().
-global firefoxWindow := ""
-
 /*
 DEBUG SECTION
 -------------------------------------------------
@@ -25,31 +22,27 @@ Otherwise this can lead to fatal erros and failures !
 */
 
 ; Determines the location of the script's configuration file.
-global configFileLocation := A_WorkingDir . "\files\ytdownloader.ini"
+global configFileLocation := A_WorkingDir . "\files\config\ytdownloader.ini"
 ; Specifies path for the .txt file which stores the URLs.
 URL_FILE_LOCATION := A_ScriptDir . "\files\YT_URLS.txt"
 ; Specifies path for the .txt file which stores the URL backup.
 URL_BACKUP_FILE_LOCATION := A_ScriptDir . "\files\YT_URLS_BACKUP.txt"
 ; Specifies path for the .txt file which stores the blacklist file.
 BLACKLIST_FILE_LOCATION := A_ScriptDir . "\files\YT_BLACKLIST.txt"
-; Is a number in milliseconds to determine the standard wait time.
-; The standard wait time can be increased if you are on a slow system
-; or decreased when your computer is a quantum computer.
-; NOTE : Changing this value at your own risk ! May lead to errors.
-WAIT_TIME := 500
-; Sets the default download format for your collected URLs.
-DOWNLOAD_FORMAT := "MP4"
+; Standard download path.
+DEFAULT_DOWNLOAD_PATH := A_ScriptDir . "\files\download"
 ; Stores which hotkeys are enabled / disabled via the GUI.
-HOTKEY_STATE_ARRAY := "[0, 0, 0, 0]"
+HOTKEY_STATE_ARRAY := "[0, 0, 0, 0, 0, 0, 0]"
 ; Just a list of all standard hotkeys.
 DOWNLOAD_HK := "+^!D"
 URL_COLLECT_HK := "+^!S"
 THUMBNAIL_URL_COLLECT_HK := "+^!F"
-GUI_HK := "+^!G"
+MAIN_GUI_HK := "+^!G"
 TERMINATE_SCRIPT_HK := "+^!T"
 RELOAD_SCRIPT_HK := "+^!R"
 PAUSE_CONTINUE_SCRIPT_HK := "+^!P"
 CLEAR_URL_FILE_HK := "!F1"
+OPTIONS_GUI_HK := "+^!A"
 ;------------------------------------------------
 
 ; Will contain all config values matching with each variable name in the array below.
@@ -68,17 +61,17 @@ configVariableNameArray := [
     "URL_FILE_LOCATION",
     "URL_BACKUP_FILE_LOCATION",
     "BLACKLIST_FILE_LOCATION",
-    "WAIT_TIME", ; 5
-    "DOWNLOAD_FORMAT",
+    "DEFAULT_DOWNLOAD_PATH",
     "HOTKEY_STATE_ARRAY",
     "DOWNLOAD_HK",
     "URL_COLLECT_HK",
-    "THUMBNAIL_URL_COLLECT_HK", ; 10
-    "GUI_HK",
+    "THUMBNAIL_URL_COLLECT_HK",
+    "MAIN_GUI_HK",
+    "OPTIONS_GUI_HK",
     "TERMINATE_SCRIPT_HK",
     "RELOAD_SCRIPT_HK",
     "PAUSE_CONTINUE_SCRIPT_HK",
-    "CLEAR_URL_FILE_HK" ; 15
+    "CLEAR_URL_FILE_HK"
 ]
 ; Create an array including the matching section name for EACH item in the configVariableNameArray.
 ; This makes it easier to read and write the config file.
@@ -88,17 +81,17 @@ configSectionNameArray := [
     "FileLocations",
     "FileLocations",
     "FileLocations",
-    "Options", ; 5
-    "Options",
-    "Hotkeys",
-    "Hotkeys",
-    "Hotkeys",
-    "Hotkeys", ; 10
+    "FileLocations",
     "Hotkeys",
     "Hotkeys",
     "Hotkeys",
     "Hotkeys",
-    "Hotkeys" ; 15
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys",
+    "Hotkeys"
 ]
 
 /*
@@ -128,9 +121,9 @@ createDefaultConfigFile(pBooleanCreateBackUp := true, pBooleanShowPrompt := fals
         {
             FileMove(configFileLocation, configFileLocation . "_old", true)
         }
-        If (!DirExist(A_WorkingDir . "\files"))
+        If (!DirExist(SplitPath(configFileLocation, , &outDir)))
         {
-            DirCreate(A_WorkingDir . "\files")
+            DirCreate(outDir)
         }
         FileAppend("", configFileLocation)
     }
@@ -138,7 +131,7 @@ createDefaultConfigFile(pBooleanCreateBackUp := true, pBooleanShowPrompt := fals
     If (configVariableNameArray.Length != configSectionNameArray.Length)
     {
         MsgBox("Not every config file entry has been asigned to a section !`n`nPlease fix this by checking both arrays.",
-            "Error", "O IconX")
+            "Error !", "O IconX")
         MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
         ExitApp()
     }
@@ -180,7 +173,7 @@ readConfigFile(pOptionName)
         {
             result := MsgBox("The script's config file seems to be corrupted or unavailable !"
                 "`n`nDo you want to create a new one using the template ?"
-                , "Error", "YN IconX 8192 T10")
+                , "Error !", "YN IconX 8192 T10")
             If (result = "Yes")
             {
                 createDefaultConfigFile()
@@ -215,7 +208,7 @@ readConfigFile(pOptionName)
                     If (InStr(outDir, A_LoopField) || InStr(outDir, "\\") || InStr(outDir, "\\\"))
                     {
                         MsgBox("Could not create directory !`nCheck the config file for a valid path at : `n "
-                            . configVariableNameArray[A_Index], "Error", "O Icon! T10")
+                            . configVariableNameArray[A_Index], "Error !", "O Icon! T10")
                         MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
                         ExitApp()
                     }
@@ -234,7 +227,7 @@ readConfigFile(pOptionName)
                         Catch
                         {
                             MsgBox("Could not create directory !`nCheck the config file for a valid path at : `n "
-                                . configVariableNameArray[A_Index], "Error", "O Icon! T10")
+                                . configVariableNameArray[A_Index], "Error !", "O Icon! T10")
                             MsgBox("Script has been terminated.", "Script status", "O IconX T1.5")
                             ExitApp()
                         }
@@ -250,7 +243,7 @@ readConfigFile(pOptionName)
             Return configFileContentArray[A_Index]
         }
     }
-    MsgBox("Could not find " . optionName . "in the config file.", "Script status", "O IconX T3")
+    MsgBox("Could not find " . optionName . " in the config file.", "Script status", "O IconX T3")
     ExitApp()
 }
 
@@ -267,21 +260,24 @@ editConfigFile(pOptionName, pData)
         ; Searches in the config file for the given option name to then change the value.
         If (InStr(configVariableNameArray[A_Index], optionName, 0))
         {
-            ; Check just in case the given data is an array.
-            If (data.Has(1) = true)
+            Try
             {
-                dataString := arrayToString(data)
-                IniWrite(dataString, configFileLocation
-                    , configSectionNameArray[A_Index]
-                    , configVariableNameArray[A_Index])
-                Return
-            }
-            Else
-            {
-                IniWrite(data, configFileLocation
-                    , configSectionNameArray[A_Index]
-                    , configVariableNameArray[A_Index])
-                Return
+                ; Check just in case the given data is an array.
+                If (data.Has(1) = true)
+                {
+                    dataString := arrayToString(data)
+                    IniWrite(dataString, configFileLocation
+                        , configSectionNameArray[A_Index]
+                        , configVariableNameArray[A_Index])
+                    Return
+                }
+                Else
+                {
+                    IniWrite(data, configFileLocation
+                        , configSectionNameArray[A_Index]
+                        , configVariableNameArray[A_Index])
+                    Return
+                }
             }
         }
     }
